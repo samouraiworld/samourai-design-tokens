@@ -1,5 +1,5 @@
 {
-  "$comment": "The accessibility contract as data, in the shape samourai-visio/scripts/check-contrast.py already consumes. `fg` and `bg` are token paths from tokens.json, or a literal #hex. `min` is 4.5 for text (WCAG 2.1 SC 1.4.3) or 3.0 for a non-text boundary, control edge or focus indicator (SC 1.4.11); the large-text 3:1 exemption is not used anywhere in this system. `fgAlpha` composites the foreground over the background before measuring — a translucent colour measured as if it were opaque reports a ratio no user ever sees. `exempt` records a row that is measured and reported but not gated. `expect: \"fail\"` inverts the row: it is a pair the design system forbids, and the gate fails if it ever starts passing, because that means the palette moved under the rule.",
+  "$comment": "The accessibility contract as data. The four load-bearing fields of a row — `fg`, `bg`, `label`, `min` — are the same four values samourai-visio/scripts/check-contrast.py carries in the `PAIRINGS` tuples it hardcodes; that script reads no JSON and this file is not an input to it. The shape is deliberate all the same, so a pairing can move from there to here without being reinterpreted. `fg` and `bg` are token paths from tokens.json, or a literal #hex. `min` is 4.5 for text (WCAG 2.1 SC 1.4.3) or 3.0 for a non-text boundary, control edge or focus indicator (SC 1.4.11); the large-text 3:1 exemption is not used anywhere in this system. `fgAlpha` composites the foreground over the background before measuring — a translucent colour measured as if it were opaque reports a ratio no user ever sees. `exempt` records a row that is measured and reported but not gated. `expect: \"fail\"` inverts the row: it is a pair the design system forbids, and the gate fails if it ever starts passing, because that means the palette moved under the rule.",
   "pairs": [
     {
       "id": "text.primary/surface.default",
@@ -304,6 +304,22 @@
       "min": 3.0
     },
 
+    {
+      "id": "forbidden:slate.500/surface.default",
+      "fg": "color.slate.500",
+      "bg": "semantic.surface.default",
+      "label": "slate-500 as running text — forbidden by DESIGN_SYSTEM.md §2; slate.500 is the placeholder and picto step, and the two text.placeholder rows are exempt only because a placeholder is never real text. This row fails the gate if it ever starts passing",
+      "min": 4.5,
+      "expect": "fail"
+    },
+    {
+      "id": "forbidden:green.500/surface.default",
+      "fg": "color.green.500",
+      "bg": "semantic.surface.default",
+      "label": "a -500 status colour as text on white — forbidden by DESIGN_SYSTEM.md §2; the -500 step is for dots and fills, the -600 step is the text. green.500 at 4.25:1 is the step closest to the line, so it crosses first. amber.500 is 3.64:1 and stays below with it; red.500 already clears 4.5:1, so for red the rule is semantic and no contrast row can carry it",
+      "min": 4.5,
+      "expect": "fail"
+    },
     {
       "id": "forbidden:cobalt.500/slate.900",
       "fg": "color.cobalt.500",
