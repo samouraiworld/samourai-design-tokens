@@ -31,7 +31,7 @@ NEEDS_ITEM = re.compile(rf"^      -\s*{NAME}{COMMENT}")
 AGGREGATE = "ci-ok"
 
 
-class Unparsed(Exception):
+class UnparsedError(Exception):
     """A line at job indentation the scanner could not read."""
 
 
@@ -62,7 +62,8 @@ def parse(path):
         # Looks like a job key but did not parse. Guessing here is how a job
         # ends up uncounted and therefore reported as covered.
         if JOB_LINE.match(line):
-            raise Unparsed(f"{path}:{number}: cannot read this job key: {line.strip()}")
+            key = line.strip()
+            raise UnparsedError(f"{path}:{number}: cannot read this job key: {key}")
 
         if current != AGGREGATE:
             continue
@@ -88,7 +89,7 @@ def main():
     path = sys.argv[1] if len(sys.argv) > 1 else ".github/workflows/ci.yml"
     try:
         jobs, needs = parse(path)
-    except Unparsed as exc:
+    except UnparsedError as exc:
         print(f"::error file={path}::{exc}")
         return 1
 
