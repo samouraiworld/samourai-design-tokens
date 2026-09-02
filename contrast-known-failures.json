@@ -28,20 +28,6 @@
       "min": 3.0,
       "reason": "reported in the intake; awaiting the design decision",
       "decision": "the card edge is decorative — the card is also carried by shadow.card — so this row may end up annotated decorative-only rather than darkened. It is listed rather than deleted so the decision is recorded"
-    },
-    {
-      "id": "focus-ring/surface.default",
-      "ratio": 1.78,
-      "min": 3.0,
-      "reason": "reported in the intake; awaiting the design decision",
-      "decision": "the ring is cobalt.500 at 35 % alpha, which composites to #B5C0F2 on white. The focus indicator is the one thing a keyboard user has; 1.78:1 does not satisfy 1.4.11. Raise the alpha to opaque cobalt, or ship a two-tone ring with an opaque inner edge"
-    },
-    {
-      "id": "focus-ring/surface.page",
-      "ratio": 1.74,
-      "min": 3.0,
-      "reason": "reported in the intake; awaiting the design decision",
-      "decision": "same ring, measured on the page rather than on a card. Whatever fixes focus-ring/surface.default fixes this; both rows stay so neither surface is forgotten"
     }
   ]
 }

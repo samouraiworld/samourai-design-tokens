@@ -57,7 +57,7 @@
   --action-primary-hover: #2340C4;
   --action-on-primary: #FFFFFF;
   --action-danger: #C2372B;
-  --focus-ring: 0 0 0 3px rgba(43, 75, 219, 0.35);
+  --focus-ring: 0 0 0 2px #2B4BDB, 0 0 0 5px rgba(43, 75, 219, 0.35);
 
   /* type */
   --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;

@@ -268,17 +268,15 @@
     {
       "id": "focus-ring/surface.default",
       "fg": "semantic.action.primary",
-      "fgAlpha": 0.35,
       "bg": "semantic.surface.default",
-      "label": "focus ring composited on white (non-text, 1.4.11)",
+      "label": "focus ring on white — the opaque 2 px core of the two-tone ring, which is what the indicator is made of (non-text, 1.4.11)",
       "min": 3.0
     },
     {
       "id": "focus-ring/surface.page",
       "fg": "semantic.action.primary",
-      "fgAlpha": 0.35,
       "bg": "semantic.surface.page",
-      "label": "focus ring composited on the page (frost.100) (non-text, 1.4.11)",
+      "label": "focus ring on the page (frost.100) — same core, measured off a card (non-text, 1.4.11)",
       "min": 3.0
     },
 

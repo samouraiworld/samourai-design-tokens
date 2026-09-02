@@ -140,10 +140,10 @@ export default {
         frost: "linear-gradient(115deg, #DCE6F0 0%, #EEF3F8 45%, #FFFFFF 100%)",
       },
       ringColor: {
-        DEFAULT: "rgba(43, 75, 219, 0.35)",
+        DEFAULT: "#2B4BDB",
       },
       ringWidth: {
-        DEFAULT: "3px",
+        DEFAULT: "2px",
       },
       transitionTimingFunction: {
         out: "cubic-bezier(0.2, 0.7, 0.3, 1)",
