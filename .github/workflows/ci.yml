@@ -108,5 +108,4 @@ jobs:
       - name: Every gate passed
         env:
           RESULTS: ${{ toJSON(needs) }}
-          SKIP_OK: ""
         run: printf '%s' "$RESULTS" | python3 .github/scripts/aggregate-result.py
