@@ -45,7 +45,7 @@
   --text-primary: #2F3A45;
   --text-secondary: #56626E;
   --text-tertiary: #5A6672; /* Smallest body colour: 5.87:1 on white, 4.64:1 on frost.200, the dark end of the page gradient */
-  --text-placeholder: #7C8894; /* Never real text (3.9:1) */
+  --text-placeholder: #7C8894; /* Never real text: 3.62:1 on white. Every field carries a visible label above it (COMPONENTS.md, Text field) */
   --text-inverse: #FFFFFF;
   --text-accent: #2B4BDB;
   --text-success: #1F7A45;
