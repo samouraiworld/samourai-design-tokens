@@ -39,7 +39,7 @@
   --border: #D9E1EA;
   --border-soft: #E4EAF1;
   --hairline: #EEF2F6;
-  --border-input: #C9D3DE;
+  --border-input: #7C8894; /* Control boundary, SC 1.4.11: 3.62:1 on white. slate.300 measured 1.52:1 */
 
   /* semantic — text */
   --text-primary: #2F3A45;

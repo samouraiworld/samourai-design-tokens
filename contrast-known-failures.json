@@ -23,13 +23,6 @@
       "decision": "the disabled primary button is white on slate.300. WCAG 1.4.3 exempts disabled controls, but 1.52:1 is unreadable rather than merely dimmed. Either darken the disabled fill or switch the disabled label to text.tertiary"
     },
     {
-      "id": "border.input/surface.default",
-      "ratio": 1.52,
-      "min": 3.0,
-      "reason": "reported in the intake; awaiting the design decision",
-      "decision": "1.4.11 requires 3:1 for the boundary of a control the user must find. slate.300 is decorative-strength. A darker input border is owed, or the field needs a filled ground so its extent is perceivable without the line"
-    },
-    {
       "id": "border.default/surface.default",
       "ratio": 1.32,
       "min": 3.0,

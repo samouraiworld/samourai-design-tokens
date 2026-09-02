@@ -61,7 +61,7 @@ export default {
         border: "#D9E1EA",
         "border-soft": "#E4EAF1",
         "border-hairline": "#EEF2F6",
-        "border-input": "#C9D3DE",
+        "border-input": "#7C8894",
         "text-primary": "#2F3A45",
         "text-secondary": "#56626E",
         "text-tertiary": "#5A6672",
