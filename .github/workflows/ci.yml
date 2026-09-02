@@ -95,11 +95,18 @@ jobs:
     needs: [gates, secret-scan, workflows]
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
-
       - name: Prove this gate can fail
         run: .github/scripts/aggregate-result.selftest.sh
-
+      # A gate present in the workflow but absent from `needs:` above can fail
+      # while this required check stays green. Proven before it is relied on.
+      - name: Prove the coverage check can fail
+        run: .github/scripts/check-aggregate-covers-jobs.selftest.sh
+      - name: This gate depends on every other job
+        run: python3 .github/scripts/check-aggregate-covers-jobs.py
+      # No job in this workflow is conditional, so nothing may skip. A gate
+      # that gains an `if:` must be named below deliberately, in its own diff.
       - name: Every gate passed
         env:
-          NEEDS: ${{ toJSON(needs) }}
-        run: printf '%s' "$NEEDS" | python3 .github/scripts/aggregate-result.py
+          RESULTS: ${{ toJSON(needs) }}
+          SKIP_OK: ""
+        run: printf '%s' "$RESULTS" | python3 .github/scripts/aggregate-result.py
