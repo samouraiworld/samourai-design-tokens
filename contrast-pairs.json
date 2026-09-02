@@ -1,0 +1,316 @@
+{
+  "$comment": "The accessibility contract as data, in the shape samourai-visio/scripts/check-contrast.py already consumes. `fg` and `bg` are token paths from tokens.json, or a literal #hex. `min` is 4.5 for text (WCAG 2.1 SC 1.4.3) or 3.0 for a non-text boundary, control edge or focus indicator (SC 1.4.11); the large-text 3:1 exemption is not used anywhere in this system. `fgAlpha` composites the foreground over the background before measuring — a translucent colour measured as if it were opaque reports a ratio no user ever sees. `exempt` records a row that is measured and reported but not gated. `expect: \"fail\"` inverts the row: it is a pair the design system forbids, and the gate fails if it ever starts passing, because that means the palette moved under the rule.",
+  "pairs": [
+    {
+      "id": "text.primary/surface.default",
+      "fg": "semantic.text.primary",
+      "bg": "semantic.surface.default",
+      "label": "primary text on a card",
+      "min": 4.5
+    },
+    {
+      "id": "text.primary/surface.muted",
+      "fg": "semantic.text.primary",
+      "bg": "semantic.surface.muted",
+      "label": "primary text on the muted surface",
+      "min": 4.5
+    },
+    {
+      "id": "text.primary/surface.page",
+      "fg": "semantic.text.primary",
+      "bg": "semantic.surface.page",
+      "label": "primary text on the page, light end of the gradient (frost.100)",
+      "min": 4.5
+    },
+    {
+      "id": "text.primary/frost.200",
+      "fg": "semantic.text.primary",
+      "bg": "color.frost.200",
+      "label": "primary text on the page, dark end of the gradient (frost.200)",
+      "min": 4.5
+    },
+    {
+      "id": "text.primary/surface.accent",
+      "fg": "semantic.text.primary",
+      "bg": "semantic.surface.accent",
+      "label": "primary text on a tinted accent surface",
+      "min": 4.5
+    },
+
+    {
+      "id": "text.secondary/surface.default",
+      "fg": "semantic.text.secondary",
+      "bg": "semantic.surface.default",
+      "label": "secondary text on a card",
+      "min": 4.5
+    },
+    {
+      "id": "text.secondary/surface.muted",
+      "fg": "semantic.text.secondary",
+      "bg": "semantic.surface.muted",
+      "label": "secondary text on the muted surface",
+      "min": 4.5
+    },
+    {
+      "id": "text.secondary/surface.page",
+      "fg": "semantic.text.secondary",
+      "bg": "semantic.surface.page",
+      "label": "secondary text on the page, light end of the gradient (frost.100)",
+      "min": 4.5
+    },
+    {
+      "id": "text.secondary/frost.200",
+      "fg": "semantic.text.secondary",
+      "bg": "color.frost.200",
+      "label": "secondary text on the page, dark end of the gradient (frost.200)",
+      "min": 4.5
+    },
+    {
+      "id": "text.secondary/surface.accent",
+      "fg": "semantic.text.secondary",
+      "bg": "semantic.surface.accent",
+      "label": "secondary text on a tinted accent surface",
+      "min": 4.5
+    },
+
+    {
+      "id": "text.tertiary/surface.default",
+      "fg": "semantic.text.tertiary",
+      "bg": "semantic.surface.default",
+      "label": "tertiary text on a card — the smallest body colour",
+      "min": 4.5
+    },
+    {
+      "id": "text.tertiary/surface.muted",
+      "fg": "semantic.text.tertiary",
+      "bg": "semantic.surface.muted",
+      "label": "tertiary text on the muted surface",
+      "min": 4.5
+    },
+    {
+      "id": "text.tertiary/surface.page",
+      "fg": "semantic.text.tertiary",
+      "bg": "semantic.surface.page",
+      "label": "tertiary text on the page, light end of the gradient (frost.100)",
+      "min": 4.5
+    },
+    {
+      "id": "text.tertiary/frost.200",
+      "fg": "semantic.text.tertiary",
+      "bg": "color.frost.200",
+      "label": "tertiary text on the page, dark end of the gradient (frost.200)",
+      "min": 4.5
+    },
+    {
+      "id": "text.tertiary/surface.accent",
+      "fg": "semantic.text.tertiary",
+      "bg": "semantic.surface.accent",
+      "label": "tertiary text on a tinted accent surface",
+      "min": 4.5
+    },
+
+    {
+      "id": "text.placeholder/surface.default",
+      "fg": "semantic.text.placeholder",
+      "bg": "semantic.surface.default",
+      "label": "input placeholder on a white field",
+      "min": 4.5,
+      "exempt": true
+    },
+    {
+      "id": "text.placeholder/surface.muted",
+      "fg": "semantic.text.placeholder",
+      "bg": "semantic.surface.muted",
+      "label": "input placeholder on a muted field",
+      "min": 4.5,
+      "exempt": true
+    },
+
+    {
+      "id": "text.accent/surface.default",
+      "fg": "semantic.text.accent",
+      "bg": "semantic.surface.default",
+      "label": "inline link on a card",
+      "min": 4.5
+    },
+    {
+      "id": "text.accent/surface.muted",
+      "fg": "semantic.text.accent",
+      "bg": "semantic.surface.muted",
+      "label": "inline link on the muted surface",
+      "min": 4.5
+    },
+    {
+      "id": "text.accent/surface.page",
+      "fg": "semantic.text.accent",
+      "bg": "semantic.surface.page",
+      "label": "inline link on the page",
+      "min": 4.5
+    },
+    {
+      "id": "text.accent/surface.accent",
+      "fg": "semantic.text.accent",
+      "bg": "semantic.surface.accent",
+      "label": "info pill label on its own tint",
+      "min": 4.5
+    },
+
+    {
+      "id": "action.onPrimary/action.primary",
+      "fg": "semantic.action.onPrimary",
+      "bg": "semantic.action.primary",
+      "label": "label on the primary button",
+      "min": 4.5
+    },
+    {
+      "id": "action.onPrimary/action.primaryHover",
+      "fg": "semantic.action.onPrimary",
+      "bg": "semantic.action.primaryHover",
+      "label": "label on the primary button, hover",
+      "min": 4.5
+    },
+    {
+      "id": "action.onPrimary/slate.300",
+      "fg": "semantic.action.onPrimary",
+      "bg": "color.slate.300",
+      "label": "label on the disabled primary button (COMPONENTS.md: slate.300 fill, white text)",
+      "min": 4.5
+    },
+
+    {
+      "id": "text.success/green.100",
+      "fg": "semantic.text.success",
+      "bg": "color.green.100",
+      "label": "success pill label on its tint",
+      "min": 4.5
+    },
+    {
+      "id": "text.success/surface.default",
+      "fg": "semantic.text.success",
+      "bg": "semantic.surface.default",
+      "label": "success text on white",
+      "min": 4.5
+    },
+    {
+      "id": "text.warning/amber.100",
+      "fg": "semantic.text.warning",
+      "bg": "color.amber.100",
+      "label": "warning pill label on its tint",
+      "min": 4.5
+    },
+    {
+      "id": "text.warning/surface.default",
+      "fg": "semantic.text.warning",
+      "bg": "semantic.surface.default",
+      "label": "warning text on white",
+      "min": 4.5
+    },
+    {
+      "id": "text.danger/red.100",
+      "fg": "semantic.text.danger",
+      "bg": "color.red.100",
+      "label": "danger pill label on its tint",
+      "min": 4.5
+    },
+    {
+      "id": "text.danger/surface.default",
+      "fg": "semantic.text.danger",
+      "bg": "semantic.surface.default",
+      "label": "danger text on white",
+      "min": 4.5
+    },
+
+    {
+      "id": "green.500/green.100",
+      "fg": "color.green.500",
+      "bg": "color.green.100",
+      "label": "success dot on its tint (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "amber.500/amber.100",
+      "fg": "color.amber.500",
+      "bg": "color.amber.100",
+      "label": "warning dot on its tint (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "red.500/red.100",
+      "fg": "color.red.500",
+      "bg": "color.red.100",
+      "label": "incident dot on its tint (non-text, 1.4.11)",
+      "min": 3.0
+    },
+
+    {
+      "id": "text.inverse/surface.inverse",
+      "fg": "semantic.text.inverse",
+      "bg": "semantic.surface.inverse",
+      "label": "text on the inverse card and the success toast",
+      "min": 4.5
+    },
+
+    {
+      "id": "border.input/surface.default",
+      "fg": "semantic.border.input",
+      "bg": "semantic.surface.default",
+      "label": "text-field outline on white (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "border.default/surface.default",
+      "fg": "semantic.border.default",
+      "bg": "semantic.surface.default",
+      "label": "card boundary on white (non-text, 1.4.11)",
+      "min": 3.0
+    },
+
+    {
+      "id": "focus-ring/surface.default",
+      "fg": "semantic.action.primary",
+      "fgAlpha": 0.35,
+      "bg": "semantic.surface.default",
+      "label": "focus ring composited on white (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "focus-ring/surface.page",
+      "fg": "semantic.action.primary",
+      "fgAlpha": 0.35,
+      "bg": "semantic.surface.page",
+      "label": "focus ring composited on the page (frost.100) (non-text, 1.4.11)",
+      "min": 3.0
+    },
+
+    {
+      "id": "gauge.ok/slate.150",
+      "fg": "semantic.action.primary",
+      "bg": "color.slate.150",
+      "label": "capacity gauge fill on its track (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "gauge.warn/slate.150",
+      "fg": "color.amber.500",
+      "bg": "color.slate.150",
+      "label": "capacity gauge fill at 90 % on its track (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "gauge.critical/slate.150",
+      "fg": "color.red.500",
+      "bg": "color.slate.150",
+      "label": "capacity gauge fill at 100 % on its track (non-text, 1.4.11)",
+      "min": 3.0
+    },
+
+    {
+      "id": "forbidden:cobalt.500/slate.900",
+      "fg": "color.cobalt.500",
+      "bg": "semantic.surface.inverse",
+      "label": "cobalt on slate.900 — forbidden by DESIGN_SYSTEM.md §2; this row fails the gate if it ever starts passing",
+      "min": 4.5,
+      "expect": "fail"
+    }
+  ]
+}

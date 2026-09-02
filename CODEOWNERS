@@ -1,0 +1,23 @@
+# Every PR needs a human reviewer; these paths need a specific one.
+#
+# A file matched by no rule below still needs the branch protection review —
+# CODEOWNERS adds a named reviewer, it does not replace the requirement.
+#
+# Two owners on every line, never one. A sole owner who is also the author
+# cannot be reviewed at all: GitHub refuses self-approval, so the code-owner
+# rule blocks forever instead of ever being satisfied.
+
+*                       @zxxma @louis14448
+
+# The source of truth. A value changed here repaints both front-ends at once,
+# and the contrast gate is the only thing standing between a hex edit and an
+# unreadable screen.
+/tokens.json            @zxxma @louis14448
+/contrast-pairs.json    @zxxma @louis14448
+/contrast-known-failures.json @zxxma @louis14448
+
+# A workflow change can disable a gate without failing anything: CI goes green
+# because the step that would have failed no longer runs.
+/.github/workflows/     @zxxma @louis14448
+/AGENTS.md              @zxxma @louis14448
+/docs/adr/              @zxxma @louis14448

@@ -1,0 +1,111 @@
+name: CI
+
+on:
+  # Only `main` on push — feature branches are already covered by
+  # `pull_request`, and running both made the required checks flap between two
+  # runs of the same commit.
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gates:
+    name: Grammar, contrast, drift, units
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+
+      # No `cache:` and no `npm ci`. This package has no dependencies on
+      # purpose (see docs/adr/0001), so there is no lockfile to hash and
+      # nothing to install; asking setup-node to cache without a lockfile
+      # FAILS the job outright.
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version-file: .nvmrc
+
+      # The four gates, in one command, all of them run even after one fails.
+      # `npm run build` is deliberately NOT run here: the drift gate asserts
+      # that the committed dist/ already equals a fresh build, and building
+      # first would make that assertion vacuous.
+      - name: Gates
+        run: npm test
+
+  secret-scan:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          fetch-depth: 0 # gitleaks scans history, not just the tip
+
+      # The gitleaks ACTION requires a paid licence for GitHub organisations.
+      # The gitleaks BINARY is MIT and unrestricted, so run it directly.
+      - name: gitleaks
+        env:
+          GITLEAKS_VERSION: 8.28.0
+        run: |
+          set -euo pipefail
+          curl -sSfL -o /tmp/gitleaks.tar.gz \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          tar -xzf /tmp/gitleaks.tar.gz -C /tmp gitleaks
+          /tmp/gitleaks detect --source . --redact --verbose --exit-code 1
+
+  workflows:
+    name: Workflow lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+
+      # A typo in a workflow key is not an error: GitHub ignores the unknown
+      # key and the step it belonged to quietly never runs. actionlint is the
+      # only thing that reads these files strictly.
+      - name: actionlint
+        env:
+          ACTIONLINT_VERSION: 1.7.7
+        run: |
+          set -euo pipefail
+          curl -sSfL -o /tmp/actionlint.tar.gz \
+            "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz"
+          tar -xzf /tmp/actionlint.tar.gz -C /tmp actionlint
+          /tmp/actionlint -color
+
+  # The single check branch protection points at. Requiring the three jobs above
+  # by name instead would put the gate list in repository settings, where it
+  # rots out of sync with this file: renaming a job leaves the old context
+  # required forever — blocking every PR on a check nothing will ever report —
+  # while the job that replaced it is required by nothing at all.
+  #
+  # `if: always()` is what makes the aggregate honest. Without it, a failed or
+  # skipped dependency SKIPS this job too, and a skipped required check is
+  # reported to branch protection as satisfied: the merge button goes green
+  # precisely because a gate went red. The verdict itself lives in a script so
+  # the self-test below can prove it still turns this job red.
+  ci-ok:
+    name: ci-ok
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [gates, secret-scan, workflows]
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+      - name: Prove this gate can fail
+        run: .github/scripts/aggregate-result.selftest.sh
+      # A gate present in the workflow but absent from `needs:` above can fail
+      # while this required check stays green. Proven before it is relied on.
+      - name: Prove the coverage check can fail
+        run: .github/scripts/check-aggregate-covers-jobs.selftest.sh
+      - name: This gate depends on every other job
+        run: python3 .github/scripts/check-aggregate-covers-jobs.py
+      # No job in this workflow is conditional, so nothing may skip. A gate
+      # that gains an `if:` must be named below deliberately, in its own diff.
+      - name: Every gate passed
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: printf '%s' "$RESULTS" | python3 .github/scripts/aggregate-result.py
