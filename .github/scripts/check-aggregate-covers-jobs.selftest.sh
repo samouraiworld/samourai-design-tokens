@@ -13,7 +13,8 @@ script="$here/check-aggregate-covers-jobs.py"
 
 [ -f "$script" ] || { echo "self-test FAILED: $script is missing" >&2; exit 1; }
 
-work="$(mktemp -d)"
+work="$(mktemp -d "${TMPDIR:-/tmp}/aggregate-covers-selftest.XXXXXX")"
+trap 'rm -rf "$work"' EXIT
 
 fixture() { printf '%s\n' "$2" > "$work/$1.yml"; }
 
@@ -80,5 +81,43 @@ jobs:
     runs-on: ubuntu-latest'
 expect 1 missing
 
-echo "self-test passed: an unwired gate, a stale dependency and a missing"
-echo "aggregate are all caught"
+# YAML allows a quoted key. If the scanner cannot see it, the job is not
+# counted and its absence from needs: is reported as full coverage.
+fixture quoted 'name: CI
+jobs:
+  "build":
+    runs-on: ubuntu-latest
+  ci-ok:
+    name: ci-ok
+    needs:
+      - build'
+expect 0 quoted
+
+fixture quoted-uncovered 'name: CI
+jobs:
+  "build":
+    runs-on: ubuntu-latest
+  '"'"'lint'"'"':
+    runs-on: ubuntu-latest
+  ci-ok:
+    name: ci-ok
+    needs:
+      - build'
+expect 1 quoted-uncovered
+
+# Anything else at job indentation is a parse failure, never a skip: guessing
+# is what let an unreadable key count as covered in the first place.
+fixture unreadable 'name: CI
+jobs:
+  build:
+    runs-on: ubuntu-latest
+  ? complex key
+  : runs-on: ubuntu-latest
+  ci-ok:
+    name: ci-ok
+    needs:
+      - build'
+expect 1 unreadable
+
+echo "self-test passed: an unwired gate, a stale dependency, a missing"
+echo "aggregate and a key the scanner cannot read are all caught"

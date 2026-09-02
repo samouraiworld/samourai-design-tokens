@@ -14,20 +14,38 @@ dependency beyond the interpreter already present on the runner.
 import re
 import sys
 
-JOB_KEY = re.compile(r"^  ([A-Za-z0-9_.\-]+):\s*(?:#.*)?$")
+# YAML permits a quoted key, and a job the scanner cannot see is a job this
+# check silently declares covered. Accept both quoting styles, and treat any
+# other line at job indentation as a parse failure rather than skipping it.
+# A name may be bare, double-quoted or single-quoted.
+NAME = r"""(?:"([^"]*)"|'([^']*)'|([A-Za-z0-9_.\-]+))"""
+COMMENT = r"\s*(?:#.*)?$"
+
+JOB_KEY = re.compile(rf"^  {NAME}:{COMMENT}")
+JOB_LINE = re.compile(r"^  [^#\s].*:")
 SECTION = re.compile(r"^([A-Za-z0-9_.\-]+):")
-NEEDS_BLOCK = re.compile(r"^    needs:\s*(?:#.*)?$")
-NEEDS_FLOW = re.compile(r"^    needs:\s*\[(.*)\]\s*(?:#.*)?$")
-NEEDS_ITEM = re.compile(r"^      -\s*([A-Za-z0-9_.\-]+)\s*(?:#.*)?$")
+NEEDS_BLOCK = re.compile(rf"^    needs:{COMMENT}")
+NEEDS_FLOW = re.compile(rf"^    needs:\s*\[(.*)\]{COMMENT}")
+NEEDS_ITEM = re.compile(rf"^      -\s*{NAME}{COMMENT}")
 
 AGGREGATE = "ci-ok"
+
+
+class Unparsed(Exception):
+    """A line at job indentation the scanner could not read."""
+
+
+def first(match):
+    """The one populated group of an alternation."""
+    return next(g for g in match.groups() if g is not None)
 
 
 def parse(path):
     """Return (all job keys, the aggregate's needs)."""
     jobs, needs, in_jobs, current, collecting = [], [], False, None, False
 
-    for line in open(path, encoding="utf-8").read().splitlines():
+    lines = open(path, encoding="utf-8").read().splitlines()
+    for number, line in enumerate(lines, start=1):
         if SECTION.match(line):
             in_jobs = line.startswith("jobs:")
             continue
@@ -36,10 +54,15 @@ def parse(path):
 
         key = JOB_KEY.match(line)
         if key:
-            current = key.group(1)
+            current = first(key)
             jobs.append(current)
             collecting = False
             continue
+
+        # Looks like a job key but did not parse. Guessing here is how a job
+        # ends up uncounted and therefore reported as covered.
+        if JOB_LINE.match(line):
+            raise Unparsed(f"{path}:{number}: cannot read this job key: {line.strip()}")
 
         if current != AGGREGATE:
             continue
@@ -54,7 +77,7 @@ def parse(path):
         if collecting:
             item = NEEDS_ITEM.match(line)
             if item:
-                needs.append(item.group(1))
+                needs.append(first(item))
             elif line.strip() and not line.startswith("      "):
                 collecting = False
 
@@ -63,7 +86,11 @@ def parse(path):
 
 def main():
     path = sys.argv[1] if len(sys.argv) > 1 else ".github/workflows/ci.yml"
-    jobs, needs = parse(path)
+    try:
+        jobs, needs = parse(path)
+    except Unparsed as exc:
+        print(f"::error file={path}::{exc}")
+        return 1
 
     if AGGREGATE not in jobs:
         print(f"::error file={path}::no `{AGGREGATE}` job found")
