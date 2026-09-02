@@ -49,9 +49,8 @@ def problems(needs, skippable):
             continue
         if result == "skipped":
             if name not in skippable:
-                found.append(
-                    (name, result, f"was skipped but is not listed in {SKIP_OK_ENV}")
-                )
+                why = f"was skipped but is not listed in {SKIP_OK_ENV}"
+                found.append((name, result, why))
             continue
         found.append((name, result, "did not succeed"))
     return found
@@ -85,10 +84,7 @@ def main():
     # job was renamed or removed and the exemption outlived it. Not fatal on
     # its own, but it is how an exemption quietly starts covering nothing.
     for stale in sorted(skippable - set(needs)):
-        print(
-            f"::warning::{SKIP_OK_ENV} names '{stale}', which is not one of "
-            f"this job's dependencies"
-        )
+        print(f"::warning::{SKIP_OK_ENV} names '{stale}', not a dependency")
 
     found = problems(needs, skippable)
     for name, result, why in found:
