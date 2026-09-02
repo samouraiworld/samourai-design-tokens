@@ -1,3 +1,7 @@
+# Majors are never automatic: a major arrives as an issue carrying a
+# migration note and lands as its own reviewed change. Security updates are
+# immediate and ungrouped (Dependabot's security updates ignore `schedule`
+# and `groups` for the security PR).
 version: 2
 updates:
   # There is no npm entry. This package has no dependencies by design
@@ -5,18 +9,19 @@ updates:
   # nothing to open a PR about. Add it with the first dependency.
   #
   # Every `uses:` in this repository is pinned to a full commit SHA with the
-  # readable version in a trailing comment, per SUPPLY_CHAIN_POLICY sections 6
-  # and 8: a workflow is the one dependency that runs with repository
-  # credentials, and a tag can be moved under it. That format is the
-  # configuration -- dependabot has no 'prefer SHA' switch, it follows whatever
-  # the workflow already carries, and it rewrites the SHA and the trailing
-  # comment together when it bumps. Reverting a `uses:` to a bare tag silently
-  # opts that action out of pinning, so a pull request that does it is a
-  # reject, not a nit.
+  # readable version in a trailing comment, per samourai-core
+  # `docs/security/SUPPLY_CHAIN_POLICY.md` sections 6 and 8: a workflow is
+  # the one dependency that runs with repository credentials, and a tag can
+  # be moved under it. That format is the configuration -- dependabot has no
+  # 'prefer SHA' switch, it follows whatever the workflow already carries,
+  # and it rewrites the SHA and the trailing comment together when it bumps.
+  # Reverting a `uses:` to a bare tag silently opts that action out of
+  # pinning, so a pull request that does it is a reject, not a nit.
   - package-ecosystem: github-actions
     directory: '/'
     schedule:
       interval: weekly
+      day: monday
     open-pull-requests-limit: 5
     # One PR rather than one per action: ungrouped, these arrive as a handful
     # of single-line bumps a week, get rubber-stamped, and the one that matters
@@ -24,9 +29,16 @@ updates:
     groups:
       actions:
         patterns: ['*']
+    ignore:
+      # Majors are a decision, not a chore: they arrive as an issue with a
+      # migration note, not with an auto-merged bump.
+      - dependency-name: '*'
+        update-types: ['version-update:semver-major']
 
 # NOT covered by anything above: the gitleaks and actionlint versions in
 # .github/workflows/ci.yml. They are pinned as env vars and downloaded as
 # binaries — because both vendors' ACTIONS are licence-restricted for
 # organisations — so dependabot cannot see them. They are bumped by hand, and
-# a stale scanner is a scanner that misses the newest secret formats.
+# a stale scanner is a scanner that misses the newest secret formats. The
+# SHA-256 recorded next to each version in ci.yml must be bumped along with
+# it, not left pointing at the old release.
