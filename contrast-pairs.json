@@ -316,7 +316,15 @@
       "id": "forbidden:green.500/surface.default",
       "fg": "color.green.500",
       "bg": "semantic.surface.default",
-      "label": "a -500 status colour as text on white — forbidden by DESIGN_SYSTEM.md §2; the -500 step is for dots and fills, the -600 step is the text. green.500 at 4.25:1 is the step closest to the line, so it crosses first. amber.500 is 3.64:1 and stays below with it; red.500 already clears 4.5:1, so for red the rule is semantic and no contrast row can carry it",
+      "label": "a -500 status colour as text on white — forbidden by DESIGN_SYSTEM.md §2; the -500 step is for dots and fills, the -600 step is the text. green.500 at 4.25:1 is the step closest to the line, so it crosses first. This row fails the gate if it ever starts passing",
+      "min": 4.5,
+      "expect": "fail"
+    },
+    {
+      "id": "forbidden:amber.500/surface.default",
+      "fg": "color.amber.500",
+      "bg": "semantic.surface.default",
+      "label": "the same §2 rule on the second of the three status colours: amber.500 as text on white, 3.64:1 today. red.500 is the third and is the one no contrast row can carry — it already clears 4.5:1 at 5.42:1, so an expect-fail row for it would fail on the day it was added. For red, \"the -500 step is not text\" is a semantic rule and needs a lint over product code",
       "min": 4.5,
       "expect": "fail"
     },
