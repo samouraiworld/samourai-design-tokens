@@ -3,6 +3,16 @@ updates:
   # There is no npm entry. This package has no dependencies by design
   # (docs/adr/0001) and no lockfile, so an npm ecosystem here would have
   # nothing to open a PR about. Add it with the first dependency.
+  #
+  # Every `uses:` in this repository is pinned to a full commit SHA with the
+  # readable version in a trailing comment, per SUPPLY_CHAIN_POLICY sections 6
+  # and 8: a workflow is the one dependency that runs with repository
+  # credentials, and a tag can be moved under it. That format is the
+  # configuration -- dependabot has no 'prefer SHA' switch, it follows whatever
+  # the workflow already carries, and it rewrites the SHA and the trailing
+  # comment together when it bumps. Reverting a `uses:` to a bare tag silently
+  # opts that action out of pinning, so a pull request that does it is a
+  # reject, not a nit.
   - package-ecosystem: github-actions
     directory: '/'
     schedule:
