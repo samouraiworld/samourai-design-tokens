@@ -1,0 +1,110 @@
+/* GENERATED FILE — DO NOT EDIT.
+   Written by scripts/build.mjs from tokens.json, which is the source of truth.
+   Editing this file by hand is undone by the next build and caught by
+   `npm run check:drift`. Change tokens.json instead. */
+:root {
+  /* primitives — colour */
+  --slate-100: #EEF2F6;
+  --slate-150: #E4EAF1;
+  --slate-200: #D9E1EA;
+  --slate-300: #C9D3DE;
+  --slate-500: #7C8894;
+  --slate-600: #66737F;
+  --slate-700: #56626E;
+  --slate-900: #2F3A45;
+  --frost-100: #EEF3F8;
+  --frost-200: #DCE6F0;
+  --white: #FFFFFF;
+  --black: #000000;
+  --cobalt-100: #E4E9FB;
+  --cobalt-500: #2B4BDB;
+  --cobalt-600: #2340C4;
+  --green-100: #E3F3EA;
+  --green-500: #2E8B57;
+  --green-600: #1F7A45;
+  --amber-100: #FBF1DC;
+  --amber-500: #B7791F;
+  --amber-600: #8A5A10;
+  --red-100: #FBE5E2;
+  --red-500: #C2372B;
+  --red-600: #B5321F;
+
+  /* semantic — surfaces and boundaries */
+  --bg-page: linear-gradient(115deg, var(--frost-200) 0%, var(--frost-100) 45%, var(--white) 100%);
+  --bg-page-flat: #EEF3F8; /* Flat fallback; the page background is the frost gradient 115deg frost.200 → frost.100 (45%) → white */
+  --surface: #FFFFFF;
+  --surface-muted: #EEF2F6;
+  --surface-accent: #E4E9FB;
+  --surface-inverse: #2F3A45;
+  --border: #D9E1EA;
+  --border-soft: #E4EAF1;
+  --hairline: #EEF2F6;
+  --border-input: #C9D3DE;
+
+  /* semantic — text */
+  --text-primary: #2F3A45;
+  --text-secondary: #56626E;
+  --text-tertiary: #66737F; /* 5.0:1 on white — smallest body colour */
+  --text-placeholder: #7C8894; /* Never real text (3.9:1) */
+  --text-inverse: #FFFFFF;
+  --text-accent: #2B4BDB;
+  --text-success: #1F7A45;
+  --text-warning: #8A5A10;
+  --text-danger: #B5321F;
+
+  /* semantic — actions */
+  --action-primary: #2B4BDB;
+  --action-primary-hover: #2340C4;
+  --action-on-primary: #FFFFFF;
+  --action-danger: #C2372B;
+  --focus-ring: 0 0 0 3px rgba(43, 75, 219, 0.35);
+
+  /* type */
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-md: 14px;
+  --text-lg: 16px;
+  --text-xl: 20px;
+  --text-2xl: 24px;
+  --text-3xl: 30px;
+  --text-4xl: 40px;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+  --tracking-tight: -0.045em;
+  --tracking-snug: -0.02em;
+  --leading-tight: 1.1;
+  --leading-snug: 1.25;
+  --leading-body: 1.55;
+
+  /* space (4px base) */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+  --sp-12: 48px;
+
+  /* radius */
+  --r-sm: 6px; /* inputs */
+  --r-md: 8px; /* buttons */
+  --r-lg: 12px; /* cards */
+  --r-xl: 16px; /* panels */
+  --r-full: 999px;
+
+  /* elevation */
+  --shadow-card: 0px 8px 24px -16px rgba(47,58,69,0.25);
+  --shadow-pop: 0px 20px 50px -20px rgba(47,58,69,0.35);
+
+  /* motion */
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --dur-slow: 320ms;
+  --ease-out: cubic-bezier(0.2, 0.7, 0.3, 1);
+}
