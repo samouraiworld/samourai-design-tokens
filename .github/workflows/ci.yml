@@ -79,7 +79,7 @@ jobs:
 
       # The gitleaks ACTION requires a paid licence for GitHub organisations.
       # The gitleaks BINARY is MIT and unrestricted, so run it directly.
-      - name: gitleaks
+      - name: Install gitleaks
         env:
           GITLEAKS_VERSION: 8.28.0
           # Confirmed two independent ways: `shasum -a 256` on the downloaded
@@ -92,7 +92,40 @@ jobs:
             "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
           echo "${GITLEAKS_SHA256}  /tmp/gitleaks.tar.gz" | sha256sum -c -
           tar -xzf /tmp/gitleaks.tar.gz -C /tmp gitleaks
-          /tmp/gitleaks detect --source . --redact --verbose --exit-code 1
+      # A scanner nobody has watched fail is not a gate. The throwaway key is
+      # generated on the runner rather than written into this file: a literal
+      # here would be a real finding, and the scanner would flag the very
+      # workflow that tests it. The runner is discarded after the job.
+      - name: Prove the scanner can fail
+        run: |
+          set -euo pipefail
+          probe="$(mktemp -d)"
+          openssl genrsa -out "$probe/probe.pem" 2048 2>/dev/null
+          status=0
+          /tmp/gitleaks detect --no-git --source "$probe" --redact --exit-code 1 \
+            --report-format json --report-path "$probe/report.json" || status=$?
+          # Exactly 1, not merely non-zero: a missing or unrunnable binary exits
+          # 126 or 127, which would otherwise read as "the leak was caught".
+          if [ "$status" -ne 1 ]; then
+            echo "::error::probe expected exit 1 from the scanner, got $status"
+            exit 1
+          fi
+          found=$(python3 -c 'import json,sys; print(len(json.load(open(sys.argv[1]))))' \
+            "$probe/report.json")
+          if [ "$found" -ne 1 ]; then
+            echo "::error::probe expected exactly one finding, got $found"
+            exit 1
+          fi
+          echo "the probe was caught: exit 1, one finding"
+      # Scan the history this branch actually has. `detect` defaults to
+      # `--all`, so with fetch-depth 0 a finding on any other branch failed
+      # this job on every branch except the one that introduced it — which,
+      # having no pull request open, was never scanned at all.
+      - name: gitleaks
+        run: |
+          set -euo pipefail
+          /tmp/gitleaks detect --source . --log-opts="--full-history HEAD" \
+            --redact --verbose --exit-code 1
 
   workflows:
     name: Workflow lint

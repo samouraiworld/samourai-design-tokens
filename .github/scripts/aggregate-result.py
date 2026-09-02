@@ -33,6 +33,10 @@ import sys
 
 SKIP_OK_ENV = "SKIP_OK"
 
+# The job this script decides the result of. Named here so its messages can
+# point at the right place in the workflow.
+AGGREGATE = "ci-ok"
+
 
 def declared_skippable():
     """Job names this repository allows to skip, from the workflow."""
@@ -51,6 +55,11 @@ def problems(needs, skippable):
             if name not in skippable:
                 why = f"was skipped but is not listed in {SKIP_OK_ENV}"
                 found.append((name, result, why))
+            continue
+        if result is None:
+            # A dependency with no result at all is not a pass. It means the
+            # needs context was malformed, not that the job was fine.
+            found.append((name, "no result", "reported nothing at all"))
             continue
         found.append((name, result, "did not succeed"))
     return found
@@ -73,8 +82,7 @@ def main():
     if not needs:
         print(
             f"::error::the needs context was empty, so this gate read no "
-            f"results: check that the {SKIP_OK_ENV} job still declares "
-            f"`needs:`"
+            f"results: check that the {AGGREGATE} job still declares `needs:`"
         )
         return 1
 
