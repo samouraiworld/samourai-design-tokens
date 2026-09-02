@@ -2,34 +2,6 @@
   "$comment": "The explicit allowlist. A pair in contrast-pairs.json that falls below its minimum and is NOT listed here fails the gate; a pair listed here that starts passing ALSO fails the gate, so an entry cannot outlive the problem it describes. `reason` is mandatory and is what a reviewer reads; `decision` names what would let the entry be deleted. Adding an entry is a design decision, not a build fix — see AGENTS.md.",
   "failures": [
     {
-      "id": "text.tertiary/surface.muted",
-      "ratio": 4.32,
-      "min": 4.5,
-      "reason": "reported in the intake; awaiting the design decision",
-      "decision": "darken text.tertiary below #66737F, or forbid tertiary text on the muted surface in COMPONENTS.md"
-    },
-    {
-      "id": "text.tertiary/surface.page",
-      "ratio": 4.35,
-      "min": 4.5,
-      "reason": "reported in the intake; awaiting the design decision",
-      "decision": "same darkening as text.tertiary/surface.muted resolves this row too — the page's light end is 6 points lighter than the muted surface, not a separate problem"
-    },
-    {
-      "id": "text.tertiary/frost.200",
-      "ratio": 3.84,
-      "min": 4.5,
-      "reason": "reported in the intake; awaiting the design decision",
-      "decision": "the worst of the tertiary rows: the dark end of the page gradient. Either darken text.tertiary, or state that no tertiary text sits over the top-left of the gradient"
-    },
-    {
-      "id": "text.tertiary/surface.accent",
-      "ratio": 4.01,
-      "min": 4.5,
-      "reason": "reported in the intake; awaiting the design decision",
-      "decision": "darken text.tertiary, or use text.secondary for help text inside a cobalt.100 panel"
-    },
-    {
       "id": "text.placeholder/surface.default",
       "ratio": 3.62,
       "min": 4.5,
