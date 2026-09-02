@@ -65,11 +65,22 @@ jobs:
           set -euo pipefail
           probe="$(mktemp -d)"
           openssl genrsa -out "$probe/probe.pem" 2048 2>/dev/null
-          if /tmp/gitleaks detect --no-git --source "$probe" --redact --exit-code 1; then
-            echo "::error::the secret scanner did not flag a generated private key"
+          status=0
+          /tmp/gitleaks detect --no-git --source "$probe" --redact --exit-code 1 \
+            --report-format json --report-path "$probe/report.json" || status=$?
+          # Exactly 1, not merely non-zero: a missing or unrunnable binary exits
+          # 126 or 127, which would otherwise read as "the leak was caught".
+          if [ "$status" -ne 1 ]; then
+            echo "::error::probe expected exit 1 from the scanner, got $status"
             exit 1
           fi
-          echo "the probe was caught, so a real leak would fail this job"
+          found=$(python3 -c 'import json,sys; print(len(json.load(open(sys.argv[1]))))' \
+            "$probe/report.json")
+          if [ "$found" -ne 1 ]; then
+            echo "::error::probe expected exactly one finding, got $found"
+            exit 1
+          fi
+          echo "the probe was caught: exit 1, one finding"
       # Scan the history this branch actually has. `detect` defaults to
       # `--all`, so with fetch-depth 0 a finding on any other branch failed
       # this job on every branch except the one that introduced it — which,

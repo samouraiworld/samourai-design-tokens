@@ -107,12 +107,18 @@ expect 1 quoted-uncovered
 
 # Anything else at job indentation is a parse failure, never a skip: guessing
 # is what let an unreadable key count as covered in the first place.
+#
+# The key below carries a space, which YAML accepts and this scanner cannot
+# read — so the offending line is the one that trips the check, and the error
+# names it. An earlier fixture used explicit-key syntax and was caught one line
+# later, on the `:` line, which proved the behaviour while reporting the wrong
+# place.
 fixture unreadable 'name: CI
 jobs:
   build:
     runs-on: ubuntu-latest
-  ? complex key
-  : runs-on: ubuntu-latest
+  end to end:
+    runs-on: ubuntu-latest
   ci-ok:
     name: ci-ok
     needs:
