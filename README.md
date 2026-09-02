@@ -44,7 +44,7 @@ A fourth gate is local to this repository: **drift**, which asserts `dist/` is b
 
 ## How CI is wired
 
-Four jobs, in `.github/workflows/ci.yml`. Three do work: **Grammar, contrast, drift, units** runs `npm test`, **Secret scan** runs gitleaks over the whole history, **Workflow lint** runs actionlint over these workflows. The fourth, **`ci-ok`**, does no work of its own — it needs the other three and fails unless every one of them concluded `success` or a deliberate `skipped`.
+Four jobs, in `.github/workflows/ci.yml`. Three do work: **Grammar, contrast, drift, units** runs `npm test`, **Secret scan** runs gitleaks over the whole history, **Workflow lint** runs actionlint over these workflows. The fourth, **`ci-ok`**, does no work of its own — it needs the other three and fails unless every one of them concluded `success` or a deliberate `skipped`. The gitleaks and actionlint archives are verified by SHA-256 before extraction, against the `GITLEAKS_SHA256` / `ACTIONLINT_SHA256` env values recorded next to each pinned version in the workflow.
 
 `ci-ok` is the single check branch protection points at. Requiring the three working jobs by name instead would keep the gate list in repository settings, where it drifts out of step with the workflow: a renamed job leaves the old context required forever, blocking every PR on a check nothing will ever report, while the job that replaced it is required by nothing. Adding, renaming or splitting a gate is therefore a change to `ci.yml` alone.
 
