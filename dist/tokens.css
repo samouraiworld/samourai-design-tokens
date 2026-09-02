@@ -9,8 +9,8 @@
   --slate-200: #D9E1EA;
   --slate-300: #C9D3DE;
   --slate-500: #7C8894;
-  --slate-600: #66737F;
-  --slate-700: #56626E;
+  --slate-600: #5A6672;
+  --slate-700: #4C5763;
   --slate-900: #2F3A45;
   --frost-100: #EEF3F8;
   --frost-200: #DCE6F0;
@@ -39,13 +39,13 @@
   --border: #D9E1EA;
   --border-soft: #E4EAF1;
   --hairline: #EEF2F6;
-  --border-input: #C9D3DE;
+  --border-input: #7C8894; /* Control boundary, SC 1.4.11: 3.62:1 on white. slate.300 measured 1.52:1 */
 
   /* semantic — text */
   --text-primary: #2F3A45;
-  --text-secondary: #56626E;
-  --text-tertiary: #66737F; /* 5.0:1 on white — smallest body colour */
-  --text-placeholder: #7C8894; /* Never real text (3.9:1) */
+  --text-secondary: #4C5763;
+  --text-tertiary: #5A6672; /* Smallest body colour: 5.87:1 on white, 4.64:1 on frost.200, the dark end of the page gradient */
+  --text-placeholder: #7C8894; /* Never real text: 3.62:1 on white. Every field carries a visible label above it (COMPONENTS.md, Text field) */
   --text-inverse: #FFFFFF;
   --text-accent: #2B4BDB;
   --text-success: #1F7A45;
@@ -57,7 +57,7 @@
   --action-primary-hover: #2340C4;
   --action-on-primary: #FFFFFF;
   --action-danger: #C2372B;
-  --focus-ring: 0 0 0 3px rgba(43, 75, 219, 0.35);
+  --focus-ring: 0 0 0 2px #2B4BDB, 0 0 0 5px rgba(43, 75, 219, 0.35);
 
   /* type */
   --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;

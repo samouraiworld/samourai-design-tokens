@@ -133,7 +133,8 @@ export function toHex({ r, g, b }) {
 /**
  * Flatten a translucent colour onto an opaque one.
  * An `rgba()` token measured as if it were opaque reports a ratio no user ever
- * sees, which is exactly how a 1.78:1 focus ring gets recorded as passing.
+ * sees, which is exactly how the focus ring delivered at 35 % alpha would have
+ * been recorded as passing at 6.70:1 instead of the 1.78:1 it measured.
  */
 export function composite(fg, bg) {
   const a = fg.a ?? 1;

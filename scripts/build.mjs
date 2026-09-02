@@ -38,9 +38,15 @@ const flat = (path) => {
 const SPEC = {
   // DESIGN_SYSTEM.md §2: "frost gradient 115deg #DCE6F0 → #EEF3F8 (45%) → #FFFFFF".
   pageGradient: { angle: '115deg', stops: [['color.frost.200', '0%'], ['color.frost.100', '45%'], ['color.white', '100%']] },
-  // COMPONENTS.md: "Focus ring: 0 0 0 3px rgba(43,75,219,.35) on every
-  // interactive element" — the action colour at 35 %.
-  focusRing: { width: '3px', source: 'semantic.action.primary', alpha: 0.35 },
+  // COMPONENTS.md delivered the ring as "0 0 0 3px rgba(43,75,219,.35) on
+  // every interactive element". That halo alone composites to #B5C0F2 on white
+  // and measures 1.78:1, which does not satisfy SC 1.4.11 for the one indicator
+  // a keyboard user has to locate themselves with. The ring is now two-tone: an
+  // opaque core in the action colour — 6.70:1 on white, 6.01:1 on the page —
+  // with the delivered halo kept at its 3 px width, pushed outside the core.
+  // The core is what contrast-pairs.json measures, because it is what carries
+  // the indicator; the halo stays because it is what makes it read as a ring.
+  focusRing: { source: 'semantic.action.primary', core: '2px', halo: '5px', haloAlpha: 0.35 },
 };
 
 // --- Path → CSS custom property --------------------------------------------
@@ -147,7 +153,10 @@ function buildCss() {
     .map(([path, stop]) => `var(--${cssName(path)}) ${stop}`)
     .join(', ')})`;
 
-  const focus = `0 0 0 ${SPEC.focusRing.width} ${rgba(flat(SPEC.focusRing.source), SPEC.focusRing.alpha)}`;
+  const ring = flat(SPEC.focusRing.source);
+  const focus =
+    `0 0 0 ${SPEC.focusRing.core} ${ring}, ` +
+    `0 0 0 ${SPEC.focusRing.halo} ${rgba(ring, SPEC.focusRing.haloAlpha)}`;
 
   const sections = [
     ['primitives — colour', pick('color').map(declare)],
@@ -263,8 +272,10 @@ function buildPreset() {
     borderRadius: withDefaults('borderRadius', scaleObject('radius')),
     boxShadow: shadows,
     backgroundImage: { frost: gradient },
-    ringColor: { DEFAULT: rgba(flat(SPEC.focusRing.source), SPEC.focusRing.alpha) },
-    ringWidth: { DEFAULT: SPEC.focusRing.width },
+    // Tailwind's ring utility is single-tone, so it carries the opaque core —
+    // the part SC 1.4.11 measures. The full two-tone ring is on --focus-ring.
+    ringColor: { DEFAULT: flat(SPEC.focusRing.source) },
+    ringWidth: { DEFAULT: SPEC.focusRing.core },
     transitionTimingFunction: Object.fromEntries(
       pick('motion.easing').map((t) => [t.path.slice('motion.easing.'.length), cssValue(t)]),
     ),

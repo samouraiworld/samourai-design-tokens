@@ -5,8 +5,10 @@
 // The three ways a contrast suite lies, and what stops each here:
 //
 //   A translucent colour is measured as if it were opaque.  `fgAlpha`
-//     composites the foreground onto the background first, so the ring that
-//     users actually see at 1.78:1 is not recorded as 6.30:1.
+//     composites the foreground onto the background first. That is how the
+//     focus ring delivered at 35 % alpha was recorded at the 1.78:1 users saw
+//     rather than the 6.70:1 an opaque cobalt reports; the ring is two-tone
+//     now, and the field is here for the next translucent colour.
 //   A renamed token silently empties the suite.  An unresolvable pair is a
 //     hard FAIL, never a skipped row.
 //   A failure is "temporarily" tolerated and nobody remembers.  A failing pair

@@ -60,8 +60,12 @@ test('the page gradient references the frost variables rather than inlining hexe
   assert.match(css, /--bg-page: linear-gradient\(115deg, var\(--frost-200\) 0%, var\(--frost-100\) 45%, var\(--white\) 100%\);/);
 });
 
-test('the focus ring is emitted with its alpha intact, so the contrast gate composites the real colour', () => {
-  assert.match(css, /--focus-ring: 0 0 0 3px rgba\(43, 75, 219, 0\.35\);/);
+test('the focus ring keeps an opaque core, and the halo keeps its alpha intact', () => {
+  // Two assertions, one line, because the ring fails in two opposite ways. Drop
+  // the opaque core and the indicator is back to the 1.78:1 halo SC 1.4.11
+  // rejects; drop the halo's alpha and the contrast gate would measure a colour
+  // no user ever sees. The core is first so it paints against the control.
+  assert.match(css, /--focus-ring: 0 0 0 2px #2B4BDB, 0 0 0 5px rgba\(43, 75, 219, 0\.35\);/);
 });
 
 test('the generic font keywords are not quoted into family names', () => {
