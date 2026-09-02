@@ -76,11 +76,15 @@ def main():
     unknown = sorted(declared - expected)
 
     for job in missing:
-        print(f"::error file={path}::job '{job}' is not in `{AGGREGATE}` "
-              f"needs:, so the required check cannot see whether it passed")
+        print(
+            f"::error file={path}::job '{job}' is not in `{AGGREGATE}` "
+            f"needs:, so the required check cannot see whether it passed"
+        )
     for job in unknown:
-        print(f"::error file={path}::`{AGGREGATE}` needs: names '{job}', "
-              f"which is not a job in this workflow")
+        print(
+            f"::error file={path}::`{AGGREGATE}` needs: names '{job}', "
+            f"which is not a job in this workflow"
+        )
 
     if missing or unknown:
         return 1

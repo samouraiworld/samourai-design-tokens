@@ -49,7 +49,9 @@ def problems(needs, skippable):
             continue
         if result == "skipped":
             if name not in skippable:
-                found.append((name, result, f"was skipped but is not listed in {SKIP_OK_ENV}"))
+                found.append(
+                    (name, result, f"was skipped but is not listed in {SKIP_OK_ENV}")
+                )
             continue
         found.append((name, result, "did not succeed"))
     return found
@@ -70,9 +72,11 @@ def main():
     # gates passed" would let a deleted `needs:` list turn the required check
     # green while every gate went unread.
     if not needs:
-        print(f"::error::the needs context was empty, so this gate read no "
-              f"results: check that the {SKIP_OK_ENV} job still declares "
-              f"`needs:`")
+        print(
+            f"::error::the needs context was empty, so this gate read no "
+            f"results: check that the {SKIP_OK_ENV} job still declares "
+            f"`needs:`"
+        )
         return 1
 
     skippable = declared_skippable()
@@ -81,8 +85,10 @@ def main():
     # job was renamed or removed and the exemption outlived it. Not fatal on
     # its own, but it is how an exemption quietly starts covering nothing.
     for stale in sorted(skippable - set(needs)):
-        print(f"::warning::{SKIP_OK_ENV} names '{stale}', which is not one of "
-              f"this job's dependencies")
+        print(
+            f"::warning::{SKIP_OK_ENV} names '{stale}', which is not one of "
+            f"this job's dependencies"
+        )
 
     found = problems(needs, skippable)
     for name, result, why in found:
@@ -92,11 +98,9 @@ def main():
         print(f"{len(found)} of {len(needs)} gates did not pass")
         return 1
 
-    skipped = sum(1 for job in needs.values()
-                  if (job or {}).get("result") == "skipped")
+    skipped = sum(1 for job in needs.values() if (job or {}).get("result") == "skipped")
     if skipped:
-        print(f"all {len(needs)} gates passed ({skipped} skipped by "
-              f"declaration)")
+        print(f"all {len(needs)} gates passed ({skipped} skipped by declaration)")
     else:
         print(f"all {len(needs)} gates succeeded")
     return 0
