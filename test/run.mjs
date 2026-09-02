@@ -1,0 +1,38 @@
+#!/usr/bin/env node
+// `npm test` — the four gates, in the order that makes a failure readable.
+//
+//   grammar   tokens.json is valid DTCG and follows the naming grammar
+//   contrast  every declared pair clears its minimum or carries a reason
+//   drift     dist/ is exactly what tokens.json generates
+//   units     the token-resolution guard, and CSS parity with the design drop
+//
+// Every gate runs even when an earlier one fails, so one command tells you
+// everything that is wrong rather than one thing at a time.
+
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
+
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
+
+const gates = [
+  ['grammar', ['scripts/check-grammar.mjs']],
+  ['contrast', ['scripts/check-contrast.mjs']],
+  ['drift', ['scripts/build.mjs', '--check']],
+  ['units', ['--test', '--test-reporter=spec', 'test/token-test.selftest.mjs', 'test/css-parity.selftest.mjs']],
+];
+
+const failed = [];
+
+for (const [name, args] of gates) {
+  console.log(`\n[1m── ${name} ${'─'.repeat(Math.max(0, 68 - name.length))}[0m\n`);
+  const result = spawnSync(process.execPath, args, { cwd: ROOT, stdio: 'inherit' });
+  if (result.status !== 0) failed.push(name);
+}
+
+console.log(`\n${'═'.repeat(72)}`);
+if (failed.length) {
+  console.error(`FAILED: ${failed.join(', ')}`);
+  process.exit(1);
+}
+console.log('All four gates green: grammar, contrast, drift, units.');
