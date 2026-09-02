@@ -76,3 +76,30 @@ jobs:
             "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz"
           tar -xzf /tmp/actionlint.tar.gz -C /tmp actionlint
           /tmp/actionlint -color
+
+  # The single check branch protection points at. Requiring the three jobs above
+  # by name instead would put the gate list in repository settings, where it
+  # rots out of sync with this file: renaming a job leaves the old context
+  # required forever — blocking every PR on a check nothing will ever report —
+  # while the job that replaced it is required by nothing at all.
+  #
+  # `if: always()` is what makes the aggregate honest. Without it, a failed or
+  # skipped dependency SKIPS this job too, and a skipped required check is
+  # reported to branch protection as satisfied: the merge button goes green
+  # precisely because a gate went red. The verdict itself lives in a script so
+  # the self-test below can prove it still turns this job red.
+  ci-ok:
+    name: ci-ok
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [gates, secret-scan, workflows]
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Prove this gate can fail
+        run: .github/scripts/aggregate-result.selftest.sh
+
+      - name: Every gate passed
+        env:
+          NEEDS: ${{ toJSON(needs) }}
+        run: printf '%s' "$NEEDS" | python3 .github/scripts/aggregate-result.py

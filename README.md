@@ -42,6 +42,14 @@ ADR-0004 names three tests, each guarding one failure that is otherwise complete
 
 A fourth gate is local to this repository: **drift**, which asserts `dist/` is byte-identical to a fresh build. `dist/` is committed so consumers can install from git, and a committed build output is a copy — the same failure mode ADR-0004 rejects — unless something proves it is still generated.
 
+## How CI is wired
+
+Four jobs, in `.github/workflows/ci.yml`. Three do work: **Grammar, contrast, drift, units** runs `npm test`, **Secret scan** runs gitleaks over the whole history, **Workflow lint** runs actionlint over these workflows. The fourth, **`ci-ok`**, does no work of its own — it needs the other three and fails unless every one of them concluded `success` or a deliberate `skipped`.
+
+`ci-ok` is the single check branch protection points at. Requiring the three working jobs by name instead would keep the gate list in repository settings, where it drifts out of step with the workflow: a renamed job leaves the old context required forever, blocking every PR on a check nothing will ever report, while the job that replaced it is required by nothing. Adding, renaming or splitting a gate is therefore a change to `ci.yml` alone.
+
+It runs `.github/scripts/aggregate-result.selftest.sh` before it decides anything. A required check nobody has ever seen fail is a decoration, and this one is the last thing standing between a red gate and a green merge button.
+
 ## How the hub and the console consume it
 
 Until GitHub Packages is set up for the organisation, both repositories take a **git dependency pinned to a tag**. A branch or a bare repository URL is not pinned: it re-resolves on every fresh install, and the palette changes underneath the consumer between two CI runs of the same commit.
