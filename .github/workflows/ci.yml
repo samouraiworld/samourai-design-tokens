@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  # Only `main` on push — feature branches are already covered by
+  # `pull_request`, and running both made the required checks flap between two
+  # runs of the same commit.
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gates:
+    name: Grammar, contrast, drift, units
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      # No `cache:` and no `npm ci`. This package has no dependencies on
+      # purpose (see docs/adr/0001), so there is no lockfile to hash and
+      # nothing to install; asking setup-node to cache without a lockfile
+      # FAILS the job outright.
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+
+      # The four gates, in one command, all of them run even after one fails.
+      # `npm run build` is deliberately NOT run here: the drift gate asserts
+      # that the committed dist/ already equals a fresh build, and building
+      # first would make that assertion vacuous.
+      - name: Gates
+        run: npm test
+
+  secret-scan:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0 # gitleaks scans history, not just the tip
+
+      # The gitleaks ACTION requires a paid licence for GitHub organisations.
+      # The gitleaks BINARY is MIT and unrestricted, so run it directly.
+      - name: gitleaks
+        env:
+          GITLEAKS_VERSION: 8.28.0
+        run: |
+          set -euo pipefail
+          curl -sSfL -o /tmp/gitleaks.tar.gz \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          tar -xzf /tmp/gitleaks.tar.gz -C /tmp gitleaks
+          /tmp/gitleaks detect --source . --redact --verbose --exit-code 1
+
+  workflows:
+    name: Workflow lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      # A typo in a workflow key is not an error: GitHub ignores the unknown
+      # key and the step it belonged to quietly never runs. actionlint is the
+      # only thing that reads these files strictly.
+      - name: actionlint
+        env:
+          ACTIONLINT_VERSION: 1.7.7
+        run: |
+          set -euo pipefail
+          curl -sSfL -o /tmp/actionlint.tar.gz \
+            "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz"
+          tar -xzf /tmp/actionlint.tar.gz -C /tmp actionlint
+          /tmp/actionlint -color

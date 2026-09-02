@@ -1,0 +1,22 @@
+version: 2
+updates:
+  # There is no npm entry. This package has no dependencies by design
+  # (docs/adr/0001) and no lockfile, so an npm ecosystem here would have
+  # nothing to open a PR about. Add it with the first dependency.
+  - package-ecosystem: github-actions
+    directory: '/'
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    # One PR rather than one per action: ungrouped, these arrive as a handful
+    # of single-line bumps a week, get rubber-stamped, and the one that matters
+    # is lost in the pile.
+    groups:
+      actions:
+        patterns: ['*']
+
+# NOT covered by anything above: the gitleaks and actionlint versions in
+# .github/workflows/ci.yml. They are pinned as env vars and downloaded as
+# binaries — because both vendors' ACTIONS are licence-restricted for
+# organisations — so dependabot cannot see them. They are bumped by hand, and
+# a stale scanner is a scanner that misses the newest secret formats.
