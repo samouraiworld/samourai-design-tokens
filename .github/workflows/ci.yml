@@ -21,13 +21,13 @@ jobs:
     name: Grammar, contrast, drift, units
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
       # No `cache:` and no `npm ci`. This package has no dependencies on
       # purpose (see docs/adr/0001), so there is no lockfile to hash and
       # nothing to install; asking setup-node to cache without a lockfile
       # FAILS the job outright.
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version-file: .nvmrc
 
@@ -42,7 +42,7 @@ jobs:
     name: Secret scan
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           fetch-depth: 0 # gitleaks scans history, not just the tip
 
@@ -62,7 +62,7 @@ jobs:
     name: Workflow lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
       # A typo in a workflow key is not an error: GitHub ignores the unknown
       # key and the step it belonged to quietly never runs. actionlint is the
@@ -94,7 +94,7 @@ jobs:
     if: always()
     needs: [gates, secret-scan, workflows]
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
       - name: Prove this gate can fail
         run: .github/scripts/aggregate-result.selftest.sh
