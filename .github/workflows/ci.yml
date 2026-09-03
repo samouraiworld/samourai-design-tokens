@@ -46,17 +46,86 @@ jobs:
         with:
           fetch-depth: 0 # gitleaks scans history, not just the tip
 
+      # A verification step nobody has seen reject anything is a decoration:
+      # prove sha256sum -c actually refuses a mismatch before trusting it to
+      # gate a real download.
+      - name: Prove checksum verification can fail before gitleaks runs
+        run: |
+          set -euo pipefail
+          work="$(mktemp -d)"
+          trap 'rm -rf "$work"' EXIT
+          printf 'not the real gitleaks archive\n' > "$work/sample"
+          real="$(sha256sum "$work/sample" | awk '{print $1}')"
+          wrong="$(printf '%064d' 0)"
+
+          if ! ( printf '%s  %s\n' "$real" "$work/sample" | sha256sum -c - >"$work/ok.log" 2>&1 ); then
+            echo "self-test FAILED: the correct checksum was rejected" >&2
+            cat "$work/ok.log" >&2
+            exit 1
+          fi
+          echo "  ok  a correct checksum is accepted"
+
+          if ( printf '%s  %s\n' "$wrong" "$work/sample" | sha256sum -c - >"$work/bad.log" 2>&1 ); then
+            echo "self-test FAILED: a wrong checksum was accepted" >&2
+            cat "$work/bad.log" >&2
+            exit 1
+          fi
+          if ! grep -q FAILED "$work/bad.log"; then
+            echo "self-test FAILED: rejection was not reported as a checksum mismatch" >&2
+            cat "$work/bad.log" >&2
+            exit 1
+          fi
+          echo "  ok  a wrong checksum is rejected, before the gitleaks archive is trusted"
+
       # The gitleaks ACTION requires a paid licence for GitHub organisations.
       # The gitleaks BINARY is MIT and unrestricted, so run it directly.
-      - name: gitleaks
+      - name: Install gitleaks
         env:
           GITLEAKS_VERSION: 8.28.0
+          # Confirmed two independent ways: `shasum -a 256` on the downloaded
+          # asset, and the matching line in gitleaks' own published
+          # gitleaks_<version>_checksums.txt. Bump this alongside the version.
+          GITLEAKS_SHA256: a65b5253807a68ac0cafa4414031fd740aeb55f54fb7e55f386acb52e6a840eb
         run: |
           set -euo pipefail
           curl -sSfL -o /tmp/gitleaks.tar.gz \
             "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          echo "${GITLEAKS_SHA256}  /tmp/gitleaks.tar.gz" | sha256sum -c -
           tar -xzf /tmp/gitleaks.tar.gz -C /tmp gitleaks
-          /tmp/gitleaks detect --source . --redact --verbose --exit-code 1
+      # A scanner nobody has watched fail is not a gate. The throwaway key is
+      # generated on the runner rather than written into this file: a literal
+      # here would be a real finding, and the scanner would flag the very
+      # workflow that tests it. The runner is discarded after the job.
+      - name: Prove the scanner can fail
+        run: |
+          set -euo pipefail
+          probe="$(mktemp -d)"
+          openssl genrsa -out "$probe/probe.pem" 2048 2>/dev/null
+          status=0
+          /tmp/gitleaks detect --no-git --source "$probe" --redact --exit-code 1 \
+            --report-format json --report-path "$probe/report.json" || status=$?
+          # Exactly 1, not merely non-zero: a missing or unrunnable binary exits
+          # 126 or 127, which would otherwise read as "the leak was caught".
+          if [ "$status" -ne 1 ]; then
+            echo "::error::probe expected exit 1 from the scanner, got $status"
+            exit 1
+          fi
+          found=$(python3 -c 'import json,sys; print(len(json.load(open(sys.argv[1]))))' \
+            "$probe/report.json")
+          if [ "$found" -ne 1 ]; then
+            echo "::error::probe expected exactly one finding, got $found"
+            exit 1
+          fi
+          echo "the probe was caught: exit 1, one finding"
+      # Scan the history this branch actually has. `detect` defaults to
+      # `--all`, so with fetch-depth 0 a finding on any other branch failed
+      # this job on every branch except the one that introduced it — which,
+      # having no pull request open, was never scanned at all.
+      - name: gitleaks
+        run: |
+          set -euo pipefail
+          /tmp/gitleaks detect --source . --log-opts="--full-history HEAD" \
+            --redact --verbose --exit-code 1
 
   workflows:
     name: Workflow lint
@@ -64,16 +133,52 @@ jobs:
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
+      # A verification step nobody has seen reject anything is a decoration:
+      # prove sha256sum -c actually refuses a mismatch before trusting it to
+      # gate a real download.
+      - name: Prove checksum verification can fail before actionlint runs
+        run: |
+          set -euo pipefail
+          work="$(mktemp -d)"
+          trap 'rm -rf "$work"' EXIT
+          printf 'not the real actionlint archive\n' > "$work/sample"
+          real="$(sha256sum "$work/sample" | awk '{print $1}')"
+          wrong="$(printf '%064d' 0)"
+
+          if ! ( printf '%s  %s\n' "$real" "$work/sample" | sha256sum -c - >"$work/ok.log" 2>&1 ); then
+            echo "self-test FAILED: the correct checksum was rejected" >&2
+            cat "$work/ok.log" >&2
+            exit 1
+          fi
+          echo "  ok  a correct checksum is accepted"
+
+          if ( printf '%s  %s\n' "$wrong" "$work/sample" | sha256sum -c - >"$work/bad.log" 2>&1 ); then
+            echo "self-test FAILED: a wrong checksum was accepted" >&2
+            cat "$work/bad.log" >&2
+            exit 1
+          fi
+          if ! grep -q FAILED "$work/bad.log"; then
+            echo "self-test FAILED: rejection was not reported as a checksum mismatch" >&2
+            cat "$work/bad.log" >&2
+            exit 1
+          fi
+          echo "  ok  a wrong checksum is rejected, before the actionlint archive is trusted"
+
       # A typo in a workflow key is not an error: GitHub ignores the unknown
       # key and the step it belonged to quietly never runs. actionlint is the
       # only thing that reads these files strictly.
       - name: actionlint
         env:
           ACTIONLINT_VERSION: 1.7.7
+          # Confirmed two independent ways: `shasum -a 256` on the downloaded
+          # asset, and the matching line in actionlint's own published
+          # actionlint_<version>_checksums.txt. Bump this alongside the version.
+          ACTIONLINT_SHA256: 023070a287cd8cccd71515fedc843f1985bf96c436b7effaecce67290e7e0757
         run: |
           set -euo pipefail
           curl -sSfL -o /tmp/actionlint.tar.gz \
             "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz"
+          echo "${ACTIONLINT_SHA256}  /tmp/actionlint.tar.gz" | sha256sum -c -
           tar -xzf /tmp/actionlint.tar.gz -C /tmp actionlint
           /tmp/actionlint -color
 
