@@ -12,6 +12,12 @@
 //   A failure is "temporarily" tolerated and nobody remembers.  A failing pair
 //     must be listed in contrast-known-failures.json with a written reason, and
 //     an entry whose pair now passes fails the gate so the file cannot rot.
+//   An excuse outlives the pair it was written for.  Each allowlist entry is
+//     bound to the pair's `fg`, `bg`, `fgAlpha` and `min`, and to the ratio it
+//     was written at. A pair re-pointed at other tokens, a loosened minimum, or
+//     a colour that moved since the ruling fails the gate instead of quietly
+//     inheriting the old reason. test/check-contrast.selftest.mjs proves each
+//     of those failures still fires.
 
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
@@ -25,6 +31,44 @@ const { pairs } = JSON.parse(readFileSync(join(ROOT, 'contrast-pairs.json'), 'ut
 const allowFile = join(ROOT, 'contrast-known-failures.json');
 const allowlist = existsSync(allowFile) ? JSON.parse(readFileSync(allowFile, 'utf8')) : { failures: [] };
 const allowed = new Map(allowlist.failures.map((f) => [f.id, { ...f, used: false }]));
+
+/** How far a measured ratio may drift from the one an entry was written at. */
+const RATIO_SLACK = 0.05;
+
+/**
+ * Why an allowlist entry does not cover the pair it names, or null when it
+ * does. Every field an entry carries is checked, so the entry describes the
+ * pair as measured today, not the pair as it was when someone wrote the excuse.
+ */
+function bindingProblem(excuse, pair, ratio) {
+  if (!excuse.reason || !excuse.reason.trim()) return 'contrast-known-failures.json entry has no reason';
+  if (!excuse.decision || !excuse.decision.trim()) return 'contrast-known-failures.json entry has no decision';
+  for (const key of ['fg', 'bg', 'fgAlpha']) {
+    if ((excuse[key] ?? null) !== (pair[key] ?? null)) {
+      return (
+        `contrast-known-failures.json entry was written for ${key} ${JSON.stringify(excuse[key] ?? null)} ` +
+        `but the pair now measures ${key} ${JSON.stringify(pair[key] ?? null)} — a different pair, not the one excused`
+      );
+    }
+  }
+  if (excuse.min !== pair.min) {
+    return `contrast-known-failures.json entry was written for min ${excuse.min}, the pair now requires ${pair.min}`;
+  }
+  if (typeof excuse.ratio !== 'number') return 'contrast-known-failures.json entry records no ratio';
+  if (ratio < excuse.ratio - RATIO_SLACK) {
+    return (
+      `measures ${ratio.toFixed(2)}, worse than the ${excuse.ratio.toFixed(2)} the entry was written for — ` +
+      'the colour moved under the excuse; decide the new value, do not inherit the old reason'
+    );
+  }
+  if (ratio > excuse.ratio + RATIO_SLACK) {
+    return (
+      `measures ${ratio.toFixed(2)}, not the ${excuse.ratio.toFixed(2)} the entry was written for — ` +
+      'the colour moved; re-read the ruling and record the ratio it now covers'
+    );
+  }
+  return null;
+}
 
 /** A token path or a literal colour, resolved to `{r, g, b, a}`. */
 function colorOf(ref) {
@@ -97,9 +141,10 @@ for (const pair of pairs) {
   }
 
   excuse.used = true;
-  if (!excuse.reason || !excuse.reason.trim()) {
+  const problem = bindingProblem(excuse, pair, row.ratio);
+  if (problem) {
     row.verdict = 'FAIL';
-    row.note = 'contrast-known-failures.json entry has no reason';
+    row.note = problem;
     hardFailures++;
   } else {
     row.verdict = pair.exempt ? 'EXEMPT' : 'ALLOWED';

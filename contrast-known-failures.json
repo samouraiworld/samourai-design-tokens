@@ -1,8 +1,10 @@
 {
-  "$comment": "The explicit allowlist. A pair in contrast-pairs.json that falls below its minimum and is NOT listed here fails the gate; a pair listed here that starts passing ALSO fails the gate, so an entry cannot outlive the problem it describes. `reason` is mandatory and is what a reviewer reads; `decision` names what would let the entry be deleted. Adding an entry is a design decision, not a build fix — see AGENTS.md.",
+  "$comment": "The explicit allowlist. A pair in contrast-pairs.json that falls below its minimum and is NOT listed here fails the gate; a pair listed here that starts passing ALSO fails the gate, so an entry cannot outlive the problem it describes. Each entry is bound to the pair it excuses: `fg`, `bg` (and `fgAlpha` when the pair has one) and `min` must equal the pair's, and `ratio` is the value measured when the entry was written — the gate fails if the pair is re-pointed at other tokens, if its minimum is loosened, or if the measured ratio moves by more than 0.05 in either direction, so an old reason can never cover a new pair or a worse colour. `reason` is mandatory and is what a reviewer reads; `decision` is mandatory and names what would let the entry be deleted. Adding an entry is a design decision, not a build fix — see AGENTS.md.",
   "failures": [
     {
       "id": "text.tertiary/surface.muted",
+      "fg": "semantic.text.tertiary",
+      "bg": "semantic.surface.muted",
       "ratio": 4.32,
       "min": 4.5,
       "reason": "reported in the intake; awaiting the design decision",
@@ -10,6 +12,8 @@
     },
     {
       "id": "text.tertiary/surface.page",
+      "fg": "semantic.text.tertiary",
+      "bg": "semantic.surface.page",
       "ratio": 4.35,
       "min": 4.5,
       "reason": "reported in the intake; awaiting the design decision",
@@ -17,6 +21,8 @@
     },
     {
       "id": "text.tertiary/frost.200",
+      "fg": "semantic.text.tertiary",
+      "bg": "color.frost.200",
       "ratio": 3.84,
       "min": 4.5,
       "reason": "reported in the intake; awaiting the design decision",
@@ -24,6 +30,8 @@
     },
     {
       "id": "text.tertiary/surface.accent",
+      "fg": "semantic.text.tertiary",
+      "bg": "semantic.surface.accent",
       "ratio": 4.01,
       "min": 4.5,
       "reason": "reported in the intake; awaiting the design decision",
@@ -31,6 +39,8 @@
     },
     {
       "id": "text.placeholder/surface.default",
+      "fg": "semantic.text.placeholder",
+      "bg": "semantic.surface.default",
       "ratio": 3.62,
       "min": 4.5,
       "reason": "reported in the intake; awaiting the design decision",
@@ -38,6 +48,8 @@
     },
     {
       "id": "text.placeholder/surface.muted",
+      "fg": "semantic.text.placeholder",
+      "bg": "semantic.surface.muted",
       "ratio": 3.21,
       "min": 4.5,
       "reason": "reported in the intake; awaiting the design decision",
@@ -45,6 +57,8 @@
     },
     {
       "id": "action.onPrimary/slate.300",
+      "fg": "semantic.action.onPrimary",
+      "bg": "color.slate.300",
       "ratio": 1.52,
       "min": 4.5,
       "reason": "reported in the intake; awaiting the design decision",
@@ -52,6 +66,8 @@
     },
     {
       "id": "border.input/surface.default",
+      "fg": "semantic.border.input",
+      "bg": "semantic.surface.default",
       "ratio": 1.52,
       "min": 3.0,
       "reason": "reported in the intake; awaiting the design decision",
@@ -59,6 +75,8 @@
     },
     {
       "id": "border.default/surface.default",
+      "fg": "semantic.border.default",
+      "bg": "semantic.surface.default",
       "ratio": 1.32,
       "min": 3.0,
       "reason": "reported in the intake; awaiting the design decision",
@@ -66,6 +84,9 @@
     },
     {
       "id": "focus-ring/surface.default",
+      "fg": "semantic.action.primary",
+      "fgAlpha": 0.35,
+      "bg": "semantic.surface.default",
       "ratio": 1.78,
       "min": 3.0,
       "reason": "reported in the intake; awaiting the design decision",
@@ -73,6 +94,9 @@
     },
     {
       "id": "focus-ring/surface.page",
+      "fg": "semantic.action.primary",
+      "fgAlpha": 0.35,
+      "bg": "semantic.surface.page",
       "ratio": 1.74,
       "min": 3.0,
       "reason": "reported in the intake; awaiting the design decision",
