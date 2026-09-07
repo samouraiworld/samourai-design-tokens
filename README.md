@@ -50,6 +50,10 @@ Four jobs, in `.github/workflows/ci.yml`. Three do work: **Grammar, contrast, dr
 
 It runs `.github/scripts/aggregate-result.selftest.sh` before it decides anything. A required check nobody has ever seen fail is a decoration, and this one is the last thing standing between a red gate and a green merge button.
 
+## Releasing
+
+A tag is the release: there is no registry and the package is `private: true`. The procedure — gates green on `main`, `dist/` drift-clean, the contrast register read, the decider of every value change named, an annotated `vX.Y.Z` tag, then one repin pull request per consumer — is in [`RELEASE.md`](RELEASE.md). What each tag carries is in [`CHANGELOG.md`](CHANGELOG.md).
+
 ## How the hub and the console consume it
 
 Until GitHub Packages is set up for the organisation, both repositories take a **git dependency pinned to a tag**. A branch or a bare repository URL is not pinned: it re-resolves on every fresh install, and the palette changes underneath the consumer between two CI runs of the same commit.

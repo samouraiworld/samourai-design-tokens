@@ -1,0 +1,37 @@
+# Releasing
+
+There is no registry and no `npm publish`: `package.json` is `private: true`, and both consumers install this package as a git dependency pinned to a tag. **The tag is the release.** Everything below exists so that a tag is reproducible by whoever cuts the next one, and so that nothing reaches a consumer that was not proven on `main` first.
+
+## Before the tag
+
+All of this is checked on `main`, at the commit that will carry the tag. A release branch is never tagged.
+
+1. **`npm test` is green on `main`.** The `ci-ok` check on the merge commit, and a local run on a fresh checkout of that commit. Local matters because CI does not run `npm run build`: the drift gate asserts the committed `dist/` equals a fresh build, and building first would make that assertion vacuous.
+2. **`dist/` is regenerated and drift-clean.** `npm run build && git status --porcelain` prints nothing. A tag whose `dist/` lags `tokens.json` installs the old palette in both consumers with no error anywhere.
+3. **The contrast register has been read**, not just run. `npm run check:contrast` prints the table; every `ALLOWED` and `EXEMPT` row in `contrast-known-failures.json` carries a reason and the decision it records. A row still "awaiting" a decision is a reason not to tag, because the tag freezes it into what consumers ship.
+4. **The decider is named.** Every pull request since the previous tag that changed a value in `tokens.json` names, in its description, who decided the value. A value change is a design decision (AGENTS.md, "The source of truth"); a tag that carries one nobody signed ships a value nobody chose. No name, no tag.
+5. **The version is right.** `package.json` `version` follows console ADR-0004 and DESIGN_HANDOFF F5: renaming or removing a token is a **major**; a deprecation keeps the old name resolving for one minor; a value change alone is a minor. The `Unreleased` section of `CHANGELOG.md` becomes the heading for this version in the same pull request as the bump.
+
+## The tag
+
+Annotated, on `main`, pushed on its own:
+
+```sh
+git switch main && git pull --ff-only
+npm test && npm run build && git status --porcelain   # green, and prints nothing
+git tag -a vX.Y.Z -m "design-tokens vX.Y.Z"
+git push origin vX.Y.Z
+```
+
+The tag name is `v` + the `package.json` version, exactly. A tag is never moved or deleted once pushed: a consumer pinned to it has already resolved it, and a moved tag is the drift ADR-0004 exists to prevent. A mistaken tag is followed by a corrected patch tag, and the changelog says so.
+
+The person cutting the tag is one of the maintainers in `CODEOWNERS`.
+
+## After the tag
+
+The tag changes nothing until the consumers pin it. One pull request per consumer, opened by whoever cut the tag:
+
+- `samourai-console` and `samourai-hub` bump `"@samourai/design-tokens": "github:samouraiworld/samourai-design-tokens#vX.Y.Z"` in `package.json` and refresh their lockfile.
+- Each consumer's CI runs the token-resolution guard against the new preset; a class that no longer resolves fails there, which is the point of pinning rather than tracking a branch.
+- The repin pull request pastes the `check:contrast` rows whose ratio moved since the consumer's previous pin, so the reviewer sees what a value change does to the screens before the palette lands on them.
+- The consumer's version-drift rule (README, "The version-drift rule for consumers") is what makes the repin happen: a consumer more than one minor behind the newest tag fails its own CI.
