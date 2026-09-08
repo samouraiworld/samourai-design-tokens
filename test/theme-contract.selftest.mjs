@@ -23,7 +23,14 @@ function checkContract(source, styles, config) {
     const declared = [...block.matchAll(/--c-([\w-]+): ([^;]+);/g)];
     assert.equal(declared.length, Object.keys(expected).length, `${theme}: CSS declaration count`);
     for (const [role, value] of Object.entries(expected)) {
-      assert.equal(resolve(`semantic.theme.${theme}.${role}`, index), value, `${theme}.${role}: reference value`);
+      if (role === 'page-grad') {
+        const stops = [...value.matchAll(/(#[A-F0-9]{6}) (\d+)%/g)].map((m) => ({ color: m[1], position: Number(m[2]) / 100 }));
+        assert.equal(index.get(`semantic.theme.${theme}.${role}`).type, 'gradient');
+        assert.deepEqual(resolve(`semantic.theme.${theme}.${role}`, index), stops, `${theme}: gradient stops`);
+        assert.equal(source.color[`theme-${theme}`][role].$extensions['app.samourai.css-gradient'].angle, '115deg');
+      } else {
+        assert.equal(resolve(`semantic.theme.${theme}.${role}`, index), value, `${theme}.${role}: reference value`);
+      }
       assert.equal(declared.find((m) => m[1] === role)?.[2], value, `${theme}.${role}: scoped CSS`);
       if (role !== 'page-grad') {
         assert.equal(config.theme.extend.colors[`c-${role}`], `var(--c-${role})`, `${role}: dynamic preset`);
@@ -124,6 +131,12 @@ test('the standalone build is deterministic, input-sensitive and rejects incompl
     writeFileSync(join(dir, 'tokens.json'), JSON.stringify(changed));
     assert.equal(build().status, 0);
     assert.notEqual(output()[0], first[0], 'source changes must reach CSS');
+    const noAngle = structuredClone(tree);
+    delete noAngle.color['theme-dark']['page-grad'].$extensions;
+    writeFileSync(join(dir, 'tokens.json'), JSON.stringify(noAngle));
+    const invalidGradient = build();
+    assert.notEqual(invalidGradient.status, 0);
+    assert.match(invalidGradient.stderr, /gradient angle metadata/);
     delete changed.semantic.theme.black.ink;
     writeFileSync(join(dir, 'tokens.json'), JSON.stringify(changed));
     const broken = build();

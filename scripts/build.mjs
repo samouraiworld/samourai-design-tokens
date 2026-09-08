@@ -16,7 +16,7 @@
 
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { ROOT, loadTokens, walkTokens, indexTokens, resolve, resolveValue, parseColor } from './lib/tokens.mjs';
+import { ROOT, loadTokens, walkTokens, indexTokens, resolve, resolveValue, parseColor, aliasTarget } from './lib/tokens.mjs';
 
 const DIST = join(ROOT, 'dist');
 const CHECK = process.argv.includes('--check');
@@ -131,6 +131,25 @@ function cssValue(token) {
       const { offsetX, offsetY, blur, spread, color } = value;
       return `${offsetX} ${offsetY} ${blur} ${spread} ${color}`;
     }
+    case 'gradient': {
+      // Stop lists use the package's existing hex-color token dialect.
+      // Direction is CSS-specific metadata on the primitive, not a stop.
+      let source = token;
+      while (aliasTarget(source.value)) source = index.get(aliasTarget(source.value));
+      const angle = source.node.$extensions?.['app.samourai.css-gradient']?.angle;
+      if (typeof angle !== 'string' || !/^-?\d+(?:\.\d+)?deg$/.test(angle)) {
+        throw new Error(`${token.path}: missing or invalid gradient angle metadata`);
+      }
+      if (!Array.isArray(value) || value.length < 2) throw new Error(`${token.path}: invalid gradient stop list`);
+      const stops = value.map((stop) => {
+        if (!stop || !Number.isFinite(stop.position) || stop.position < 0 || stop.position > 1) {
+          throw new Error(`${token.path}: invalid gradient stop position`);
+        }
+        parseColor(stop.color);
+        return `${stop.color} ${stop.position * 100}%`;
+      });
+      return `linear-gradient(${angle},${stops.join(',')})`;
+    }
     default:
       return String(value);
   }
@@ -190,7 +209,7 @@ function buildCss() {
 
   const themes = THEMES.map((name) => {
     const selector = name === 'light' ? ':root, [data-theme="light"]' : `[data-theme="${name}"]`;
-    const values = themeRoles.map((role) => `  --c-${role}: ${flat(`semantic.theme.${name}.${role}`)};`);
+    const values = themeRoles.map((role) => `  --c-${role}: ${cssValue(byPath.get(`semantic.theme.${name}.${role}`))};`);
     return `${selector} {\n${values.join('\n')}\n}`;
   }).join('\n\n');
 
