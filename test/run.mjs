@@ -19,7 +19,7 @@ const gates = [
   ['grammar', ['scripts/check-grammar.mjs']],
   ['contrast', ['scripts/check-contrast.mjs']],
   ['drift', ['scripts/build.mjs', '--check']],
-  ['units', ['--test', '--test-reporter=spec', 'test/token-test.selftest.mjs', 'test/css-parity.selftest.mjs']],
+  ['units', ['--test', '--test-reporter=spec', 'test/token-test.selftest.mjs', 'test/css-parity.selftest.mjs', 'test/theme-contract.selftest.mjs']],
 ];
 
 const failed = [];

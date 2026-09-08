@@ -26,6 +26,19 @@ const tokens = walkTokens(tree);
 const index = indexTokens(tree);
 const byPath = new Map(tokens.map((t) => [t.path, t]));
 
+const THEMES = ['light', 'dark', 'black'];
+const themeGroups = tree.semantic?.theme;
+if (!themeGroups || Object.keys(themeGroups).join(',') !== THEMES.join(',')) {
+  throw new Error('expected complete theme set: light, dark, black');
+}
+const themeRoles = Object.keys(themeGroups.light);
+if (!themeRoles.length) throw new Error('light: incomplete theme role set');
+for (const name of THEMES) {
+  if (Object.keys(themeGroups[name]).join(',') !== themeRoles.join(',')) {
+    throw new Error(`${name}: incomplete theme role set`);
+  }
+}
+
 const flat = (path) => {
   if (!byPath.has(path)) throw new Error(`build expects the token "${path}" and tokens.json does not define it`);
   return resolve(path, index);
@@ -72,6 +85,7 @@ const CSS_PREFIX = {
 
 function cssName(path) {
   if (CSS_ALIASES[path]) return CSS_ALIASES[path];
+  if (path.startsWith('semantic.theme.')) return `c-${path.split('.').slice(3).join('-')}`;
   return mechanicalName(path);
 }
 
@@ -80,6 +94,7 @@ function mechanicalName(path) {
   const seg = path.split('.');
 
   if (seg[0] === 'color') return seg.slice(1).map(kebab).join('-');
+  if (seg[0] === 'component') return seg.slice(1).map(kebab).join('-');
 
   if (seg[0] === 'semantic') {
     const rest = seg.slice(1).map(kebab);
@@ -166,13 +181,20 @@ function buildCss() {
     ['radius', pick('radius').map(declare)],
     ['elevation', pick('shadow').map(declare)],
     ['motion', pick('motion').map(declare)],
+    ['shell geometry', [...pick('semantic.layout'), ...pick('component.shell')].map(declare)],
   ];
 
   const body = sections
     .map(([title, lines]) => `  /* ${title} */\n${lines.join('\n')}`)
     .join('\n\n');
 
-  return `${HEADER}\n:root {\n${body}\n}\n`;
+  const themes = THEMES.map((name) => {
+    const selector = name === 'light' ? ':root, [data-theme="light"]' : `[data-theme="${name}"]`;
+    const values = themeRoles.map((role) => `  --c-${role}: ${flat(`semantic.theme.${name}.${role}`)};`);
+    return `${selector} {\n${values.join('\n')}\n}`;
+  }).join('\n\n');
+
+  return `${HEADER}\n:root {\n${body}\n}\n\n/* Complete shell themes; legacy variables above retain their values. */\n${themes}\n`;
 }
 
 // --- dist/tailwind.preset.js ------------------------------------------------
@@ -235,10 +257,17 @@ function buildPreset() {
   const colors = {};
   for (const [key, child] of Object.entries(tree.color)) {
     if (key.startsWith('$')) continue;
+    // Theme primitives are implementation values; consumers use scoped c-*.
+    if (THEMES.some((name) => key === `theme-${name}`)) continue;
     colors[key] = '$value' in child ? flat(`color.${key}`) : scaleObject(`color.${key}`);
   }
-  for (const t of pick('semantic')) colors[mechanicalName(t.path)] = flat(t.path);
+  for (const t of pick('semantic').filter((t) => !t.path.startsWith('semantic.theme.') && !t.path.startsWith('semantic.layout.'))) {
+    colors[mechanicalName(t.path)] = flat(t.path);
+  }
   for (const [nick, path] of Object.entries(PRESET_NICKNAMES)) colors[nick] = flat(path);
+  for (const role of themeRoles) {
+    if (byPath.get(`semantic.theme.light.${role}`).type === 'color') colors[`c-${role}`] = `var(--c-${role})`;
+  }
 
   const shadows = Object.fromEntries(
     pick('shadow').map((t) => [t.path.slice('shadow.'.length), cssValue(t)]),
@@ -250,7 +279,10 @@ function buildPreset() {
 
   const theme = {
     colors,
-    spacing: scaleObject('space'),
+    spacing: {
+      ...scaleObject('space'),
+      ...Object.fromEntries(pick('component.shell').map((t) => [mechanicalName(t.path), `var(--${cssName(t.path)})`])),
+    },
     fontFamily: scaleObject('font.family'),
     fontSize: withDefaults('fontSize', scaleObject('font.size')),
     fontWeight: Object.fromEntries(
@@ -262,7 +294,7 @@ function buildPreset() {
     letterSpacing: scaleObject('font.tracking'),
     borderRadius: withDefaults('borderRadius', scaleObject('radius')),
     boxShadow: shadows,
-    backgroundImage: { frost: gradient },
+    backgroundImage: { frost: gradient, 'c-page-gradient': 'var(--c-page-grad)' },
     ringColor: { DEFAULT: rgba(flat(SPEC.focusRing.source), SPEC.focusRing.alpha) },
     ringWidth: { DEFAULT: SPEC.focusRing.width },
     transitionTimingFunction: Object.fromEntries(
@@ -282,8 +314,8 @@ function buildPreset() {
 // not exist emits NO CSS and NO error — for \`border-*\` the element falls back
 // to preflight's \`border: 0 solid #e5e7eb\`, a light grey line on our page.
 //
-// Not covered in v0.1, because tokens.json does not carry them yet: z-index,
-// breakpoints, and a dark mode. See docs/adr/0001 and the README.
+// The c-* colors follow the complete light/dark/black CSS theme boundary.
+// Legacy colors remain static. Breakpoints and z-index are not supplied.
 
 /** @type {{theme: {extend: Record<string, unknown>}}} */
 export default {
@@ -296,11 +328,11 @@ export default {
 
 // --- dist/tokens.d.ts -------------------------------------------------------
 function buildTypes() {
-  const vars = [
+  const vars = [...new Set([
     '--bg-page',
     '--focus-ring',
     ...tokens.map((t) => `--${cssName(t.path)}`),
-  ].sort();
+  ])].sort();
   const paths = tokens.map((t) => t.path).sort();
 
   return `// GENERATED FILE — DO NOT EDIT.

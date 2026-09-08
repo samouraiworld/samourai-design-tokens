@@ -1,5 +1,5 @@
 {
-  "$comment": "The accessibility contract as data, in the shape samourai-visio/scripts/check-contrast.py already consumes. `fg` and `bg` are token paths from tokens.json, or a literal #hex. `min` is 4.5 for text (WCAG 2.1 SC 1.4.3) or 3.0 for a non-text boundary, control edge or focus indicator (SC 1.4.11); the large-text 3:1 exemption is not used anywhere in this system. `fgAlpha` composites the foreground over the background before measuring — a translucent colour measured as if it were opaque reports a ratio no user ever sees. `exempt` records a row that is measured and reported but not gated. `expect: \"fail\"` inverts the row: it is a pair the design system forbids, and the gate fails if it ever starts passing, because that means the palette moved under the rule.",
+  "$comment": "The accessibility contract as data, in the shape samourai-visio/scripts/check-contrast.py already consumes. `fg` and `bg` are token paths from tokens.json, or a literal #hex. `min` is 4.5 for text (WCAG 2.1 SC 1.4.3) or 3.0 for a non-text boundary, control edge or focus indicator (SC 1.4.11); the large-text 3:1 exemption is not used anywhere in this system. `fgAlpha` composites the foreground over the background before measuring \u2014 a translucent colour measured as if it were opaque reports a ratio no user ever sees. `exempt` records a row that is measured and reported but not gated. `expect: \"fail\"` inverts the row: it is a pair the design system forbids, and the gate fails if it ever starts passing, because that means the palette moved under the rule. Additional measurements classify decorative or unsupported capability combinations; they are explicitly outside normative contrast acceptance, carry a purpose, and are measured by the theme contract self-test. No allowlist entries are created for them.",
   "pairs": [
     {
       "id": "text.primary/surface.default",
@@ -36,7 +36,6 @@
       "label": "primary text on a tinted accent surface",
       "min": 4.5
     },
-
     {
       "id": "text.secondary/surface.default",
       "fg": "semantic.text.secondary",
@@ -72,12 +71,11 @@
       "label": "secondary text on a tinted accent surface",
       "min": 4.5
     },
-
     {
       "id": "text.tertiary/surface.default",
       "fg": "semantic.text.tertiary",
       "bg": "semantic.surface.default",
-      "label": "tertiary text on a card — the smallest body colour",
+      "label": "tertiary text on a card \u2014 the smallest body colour",
       "min": 4.5
     },
     {
@@ -108,7 +106,6 @@
       "label": "tertiary text on a tinted accent surface",
       "min": 4.5
     },
-
     {
       "id": "text.placeholder/surface.default",
       "fg": "semantic.text.placeholder",
@@ -125,7 +122,6 @@
       "min": 4.5,
       "exempt": true
     },
-
     {
       "id": "text.accent/surface.default",
       "fg": "semantic.text.accent",
@@ -154,7 +150,6 @@
       "label": "info pill label on its own tint",
       "min": 4.5
     },
-
     {
       "id": "action.onPrimary/action.primary",
       "fg": "semantic.action.onPrimary",
@@ -176,7 +171,6 @@
       "label": "label on the disabled primary button (COMPONENTS.md: slate.300 fill, white text)",
       "min": 4.5
     },
-
     {
       "id": "text.success/green.100",
       "fg": "semantic.text.success",
@@ -219,7 +213,6 @@
       "label": "danger text on white",
       "min": 4.5
     },
-
     {
       "id": "green.500/green.100",
       "fg": "color.green.500",
@@ -241,7 +234,6 @@
       "label": "incident dot on its tint (non-text, 1.4.11)",
       "min": 3.0
     },
-
     {
       "id": "text.inverse/surface.inverse",
       "fg": "semantic.text.inverse",
@@ -249,7 +241,6 @@
       "label": "text on the inverse card and the success toast",
       "min": 4.5
     },
-
     {
       "id": "border.input/surface.default",
       "fg": "semantic.border.input",
@@ -264,7 +255,6 @@
       "label": "card boundary on white (non-text, 1.4.11)",
       "min": 3.0
     },
-
     {
       "id": "focus-ring/surface.default",
       "fg": "semantic.action.primary",
@@ -281,7 +271,6 @@
       "label": "focus ring composited on the page (frost.100) (non-text, 1.4.11)",
       "min": 3.0
     },
-
     {
       "id": "gauge.ok/slate.150",
       "fg": "semantic.action.primary",
@@ -303,14 +292,1712 @@
       "label": "capacity gauge fill at 100 % on its track (non-text, 1.4.11)",
       "min": 3.0
     },
-
     {
       "id": "forbidden:cobalt.500/slate.900",
       "fg": "color.cobalt.500",
       "bg": "semantic.surface.inverse",
-      "label": "cobalt on slate.900 — forbidden by DESIGN_SYSTEM.md §2; this row fails the gate if it ever starts passing",
+      "label": "cobalt on slate.900 \u2014 forbidden by DESIGN_SYSTEM.md \u00a72; this row fails the gate if it ever starts passing",
       "min": 4.5,
       "expect": "fail"
+    },
+    {
+      "id": "theme.light/ink/page",
+      "fg": "semantic.theme.light.ink",
+      "bg": "semantic.theme.light.page",
+      "label": "light: ink text on page",
+      "min": 4.5
+    },
+    {
+      "id": "theme.light/ink-2/page",
+      "fg": "semantic.theme.light.ink-2",
+      "bg": "semantic.theme.light.page",
+      "label": "light: ink-2 text on page",
+      "min": 4.5
+    },
+    {
+      "id": "theme.light/ink-3/page",
+      "fg": "semantic.theme.light.ink-3",
+      "bg": "semantic.theme.light.page",
+      "label": "light: ink-3 text on page",
+      "min": 4.5
+    },
+    {
+      "id": "theme.light/accent-ink/page",
+      "fg": "semantic.theme.light.accent-ink",
+      "bg": "semantic.theme.light.page",
+      "label": "light: accent-ink text on page",
+      "min": 4.5
+    },
+    {
+      "id": "theme.light/ink/surface",
+      "fg": "semantic.theme.light.ink",
+      "bg": "semantic.theme.light.surface",
+      "label": "light: ink text on surface",
+      "min": 4.5
+    },
+    {
+      "id": "theme.light/ink-2/surface",
+      "fg": "semantic.theme.light.ink-2",
+      "bg": "semantic.theme.light.surface",
+      "label": "light: ink-2 text on surface",
+      "min": 4.5
+    },
+    {
+      "id": "theme.light/ink-3/surface",
+      "fg": "semantic.theme.light.ink-3",
+      "bg": "semantic.theme.light.surface",
+      "label": "light: ink-3 text on surface",
+      "min": 4.5
+    },
+    {
+      "id": "theme.light/accent-ink/surface",
+      "fg": "semantic.theme.light.accent-ink",
+      "bg": "semantic.theme.light.surface",
+      "label": "light: accent-ink text on surface",
+      "min": 4.5
+    },
+    {
+      "id": "theme.light/ink/sunken",
+      "fg": "semantic.theme.light.ink",
+      "bg": "semantic.theme.light.sunken",
+      "label": "light: ink text on sunken",
+      "min": 4.5
+    },
+    {
+      "id": "theme.light/ink-2/sunken",
+      "fg": "semantic.theme.light.ink-2",
+      "bg": "semantic.theme.light.sunken",
+      "label": "light: ink-2 text on sunken",
+      "min": 4.5
+    },
+    {
+      "id": "theme.light/ink-3/sunken",
+      "fg": "semantic.theme.light.ink-3",
+      "bg": "semantic.theme.light.sunken",
+      "label": "light: ink-3 text on sunken",
+      "min": 4.5
+    },
+    {
+      "id": "theme.light/accent-ink/sunken",
+      "fg": "semantic.theme.light.accent-ink",
+      "bg": "semantic.theme.light.sunken",
+      "label": "light: accent-ink text on sunken",
+      "min": 4.5
+    },
+    {
+      "id": "theme.light/ink/muted",
+      "fg": "semantic.theme.light.ink",
+      "bg": "semantic.theme.light.muted",
+      "label": "light: ink text on muted",
+      "min": 4.5
+    },
+    {
+      "id": "theme.light/ink-2/muted",
+      "fg": "semantic.theme.light.ink-2",
+      "bg": "semantic.theme.light.muted",
+      "label": "light: ink-2 text on muted",
+      "min": 4.5
+    },
+    {
+      "id": "theme.light/ink-3/muted",
+      "fg": "semantic.theme.light.ink-3",
+      "bg": "semantic.theme.light.muted",
+      "label": "light: ink-3 text on muted",
+      "min": 4.5
+    },
+    {
+      "id": "theme.light/accent-ink/muted",
+      "fg": "semantic.theme.light.accent-ink",
+      "bg": "semantic.theme.light.muted",
+      "label": "light: accent-ink text on muted",
+      "min": 4.5
+    },
+    {
+      "id": "theme.light/ink/muted-2",
+      "fg": "semantic.theme.light.ink",
+      "bg": "semantic.theme.light.muted-2",
+      "label": "light: ink text on muted-2",
+      "min": 4.5
+    },
+    {
+      "id": "theme.light/ink-2/muted-2",
+      "fg": "semantic.theme.light.ink-2",
+      "bg": "semantic.theme.light.muted-2",
+      "label": "light: ink-2 text on muted-2",
+      "min": 4.5
+    },
+    {
+      "id": "theme.light/ink-3/muted-2",
+      "fg": "semantic.theme.light.ink-3",
+      "bg": "semantic.theme.light.muted-2",
+      "label": "light: ink-3 text on muted-2",
+      "min": 4.5
+    },
+    {
+      "id": "theme.light/accent-ink/muted-2",
+      "fg": "semantic.theme.light.accent-ink",
+      "bg": "semantic.theme.light.muted-2",
+      "label": "light: accent-ink text on muted-2",
+      "min": 4.5
+    },
+    {
+      "id": "theme.light/ink/hairline",
+      "fg": "semantic.theme.light.ink",
+      "bg": "semantic.theme.light.hairline",
+      "label": "light: ink text on hairline",
+      "min": 4.5
+    },
+    {
+      "id": "theme.light/ink-2/hairline",
+      "fg": "semantic.theme.light.ink-2",
+      "bg": "semantic.theme.light.hairline",
+      "label": "light: ink-2 text on hairline",
+      "min": 4.5
+    },
+    {
+      "id": "theme.light/ink-3/hairline",
+      "fg": "semantic.theme.light.ink-3",
+      "bg": "semantic.theme.light.hairline",
+      "label": "light: ink-3 text on hairline",
+      "min": 4.5
+    },
+    {
+      "id": "theme.light/accent-ink/hairline",
+      "fg": "semantic.theme.light.accent-ink",
+      "bg": "semantic.theme.light.hairline",
+      "label": "light: accent-ink text on hairline",
+      "min": 4.5
+    },
+    {
+      "id": "theme.light/on-inverse/inverse",
+      "fg": "semantic.theme.light.on-inverse",
+      "bg": "semantic.theme.light.inverse",
+      "label": "light: on-inverse text on inverse",
+      "min": 4.5
+    },
+    {
+      "id": "theme.light/on-inverse/inverse-2",
+      "fg": "semantic.theme.light.on-inverse",
+      "bg": "semantic.theme.light.inverse-2",
+      "label": "light: on-inverse text on inverse-2",
+      "min": 4.5
+    },
+    {
+      "id": "theme.light/on-inverse-dim/inverse",
+      "fg": "semantic.theme.light.on-inverse-dim",
+      "bg": "semantic.theme.light.inverse",
+      "label": "light: on-inverse-dim text on inverse",
+      "min": 4.5
+    },
+    {
+      "id": "theme.light/on-inverse-dim/inverse-2",
+      "fg": "semantic.theme.light.on-inverse-dim",
+      "bg": "semantic.theme.light.inverse-2",
+      "label": "light: on-inverse-dim text on inverse-2",
+      "min": 4.5
+    },
+    {
+      "id": "theme.light/ok-on-dark/inverse",
+      "fg": "semantic.theme.light.ok-on-dark",
+      "bg": "semantic.theme.light.inverse",
+      "label": "light: ok-on-dark text on inverse",
+      "min": 4.5
+    },
+    {
+      "id": "theme.light/ok-on-dark/inverse-2",
+      "fg": "semantic.theme.light.ok-on-dark",
+      "bg": "semantic.theme.light.inverse-2",
+      "label": "light: ok-on-dark text on inverse-2",
+      "min": 4.5
+    },
+    {
+      "id": "theme.light/bad-on-dark/inverse",
+      "fg": "semantic.theme.light.bad-on-dark",
+      "bg": "semantic.theme.light.inverse",
+      "label": "light: bad-on-dark text on inverse",
+      "min": 4.5
+    },
+    {
+      "id": "theme.light/bad-on-dark/inverse-2",
+      "fg": "semantic.theme.light.bad-on-dark",
+      "bg": "semantic.theme.light.inverse-2",
+      "label": "light: bad-on-dark text on inverse-2",
+      "min": 4.5
+    },
+    {
+      "id": "theme.light/ok/ok-soft",
+      "fg": "semantic.theme.light.ok",
+      "bg": "semantic.theme.light.ok-soft",
+      "label": "light: ok status indicator on tint",
+      "min": 3
+    },
+    {
+      "id": "theme.light/ok/surface",
+      "fg": "semantic.theme.light.ok",
+      "bg": "semantic.theme.light.surface",
+      "label": "light: ok status indicator on surface",
+      "min": 3
+    },
+    {
+      "id": "theme.light/ok-ink/ok-soft",
+      "fg": "semantic.theme.light.ok-ink",
+      "bg": "semantic.theme.light.ok-soft",
+      "label": "light: ok label on tint",
+      "min": 4.5
+    },
+    {
+      "id": "theme.light/warn/warn-soft",
+      "fg": "semantic.theme.light.warn",
+      "bg": "semantic.theme.light.warn-soft",
+      "label": "light: warn status indicator on tint",
+      "min": 3
+    },
+    {
+      "id": "theme.light/warn/surface",
+      "fg": "semantic.theme.light.warn",
+      "bg": "semantic.theme.light.surface",
+      "label": "light: warn status indicator on surface",
+      "min": 3
+    },
+    {
+      "id": "theme.light/warn-ink/warn-soft",
+      "fg": "semantic.theme.light.warn-ink",
+      "bg": "semantic.theme.light.warn-soft",
+      "label": "light: warn label on tint",
+      "min": 4.5
+    },
+    {
+      "id": "theme.light/bad/surface",
+      "fg": "semantic.theme.light.bad",
+      "bg": "semantic.theme.light.surface",
+      "label": "light: bad status indicator on surface",
+      "min": 3
+    },
+    {
+      "id": "theme.light/bad-ink/bad-soft",
+      "fg": "semantic.theme.light.bad-ink",
+      "bg": "semantic.theme.light.bad-soft",
+      "label": "light: bad label on tint",
+      "min": 4.5
+    },
+    {
+      "id": "theme.light/accent-ink/accent-soft",
+      "fg": "semantic.theme.light.accent-ink",
+      "bg": "semantic.theme.light.accent-soft",
+      "label": "light: accent text on accent tint",
+      "min": 4.5
+    },
+    {
+      "id": "theme.light/t1-fg/t1-bg",
+      "fg": "semantic.theme.light.t1-fg",
+      "bg": "semantic.theme.light.t1-bg",
+      "label": "light: avatar palette 1 initials on fill",
+      "min": 4.5
+    },
+    {
+      "id": "theme.light/t2-fg/t2-bg",
+      "fg": "semantic.theme.light.t2-fg",
+      "bg": "semantic.theme.light.t2-bg",
+      "label": "light: avatar palette 2 initials on fill",
+      "min": 4.5
+    },
+    {
+      "id": "theme.light/t3-fg/t3-bg",
+      "fg": "semantic.theme.light.t3-fg",
+      "bg": "semantic.theme.light.t3-bg",
+      "label": "light: avatar palette 3 initials on fill",
+      "min": 4.5
+    },
+    {
+      "id": "theme.light/t4-fg/t4-bg",
+      "fg": "semantic.theme.light.t4-fg",
+      "bg": "semantic.theme.light.t4-bg",
+      "label": "light: avatar palette 4 initials on fill",
+      "min": 4.5
+    },
+    {
+      "id": "theme.light/t5-fg/t5-bg",
+      "fg": "semantic.theme.light.t5-fg",
+      "bg": "semantic.theme.light.t5-bg",
+      "label": "light: avatar palette 5 initials on fill",
+      "min": 4.5
+    },
+    {
+      "id": "theme.light/t6-fg/t6-bg",
+      "fg": "semantic.theme.light.t6-fg",
+      "bg": "semantic.theme.light.t6-bg",
+      "label": "light: avatar palette 6 initials on fill",
+      "min": 4.5
+    },
+    {
+      "id": "theme.light/ink-3/#DCE6F0",
+      "fg": "semantic.theme.light.ink-3",
+      "bg": "#DCE6F0",
+      "label": "light: tertiary text at page gradient stop",
+      "min": 4.5
+    },
+    {
+      "id": "theme.light/ink-3/#EEF3F8",
+      "fg": "semantic.theme.light.ink-3",
+      "bg": "#EEF3F8",
+      "label": "light: tertiary text at page gradient stop",
+      "min": 4.5
+    },
+    {
+      "id": "theme.light/ink-3/#FFFFFF",
+      "fg": "semantic.theme.light.ink-3",
+      "bg": "#FFFFFF",
+      "label": "light: tertiary text at page gradient stop",
+      "min": 4.5
+    },
+    {
+      "id": "theme.dark/ink/page",
+      "fg": "semantic.theme.dark.ink",
+      "bg": "semantic.theme.dark.page",
+      "label": "dark: ink text on page",
+      "min": 4.5
+    },
+    {
+      "id": "theme.dark/ink-2/page",
+      "fg": "semantic.theme.dark.ink-2",
+      "bg": "semantic.theme.dark.page",
+      "label": "dark: ink-2 text on page",
+      "min": 4.5
+    },
+    {
+      "id": "theme.dark/ink-3/page",
+      "fg": "semantic.theme.dark.ink-3",
+      "bg": "semantic.theme.dark.page",
+      "label": "dark: ink-3 text on page",
+      "min": 4.5
+    },
+    {
+      "id": "theme.dark/accent-ink/page",
+      "fg": "semantic.theme.dark.accent-ink",
+      "bg": "semantic.theme.dark.page",
+      "label": "dark: accent-ink text on page",
+      "min": 4.5
+    },
+    {
+      "id": "theme.dark/ink/surface",
+      "fg": "semantic.theme.dark.ink",
+      "bg": "semantic.theme.dark.surface",
+      "label": "dark: ink text on surface",
+      "min": 4.5
+    },
+    {
+      "id": "theme.dark/ink-2/surface",
+      "fg": "semantic.theme.dark.ink-2",
+      "bg": "semantic.theme.dark.surface",
+      "label": "dark: ink-2 text on surface",
+      "min": 4.5
+    },
+    {
+      "id": "theme.dark/ink-3/surface",
+      "fg": "semantic.theme.dark.ink-3",
+      "bg": "semantic.theme.dark.surface",
+      "label": "dark: ink-3 text on surface",
+      "min": 4.5
+    },
+    {
+      "id": "theme.dark/accent-ink/surface",
+      "fg": "semantic.theme.dark.accent-ink",
+      "bg": "semantic.theme.dark.surface",
+      "label": "dark: accent-ink text on surface",
+      "min": 4.5
+    },
+    {
+      "id": "theme.dark/ink/sunken",
+      "fg": "semantic.theme.dark.ink",
+      "bg": "semantic.theme.dark.sunken",
+      "label": "dark: ink text on sunken",
+      "min": 4.5
+    },
+    {
+      "id": "theme.dark/ink-2/sunken",
+      "fg": "semantic.theme.dark.ink-2",
+      "bg": "semantic.theme.dark.sunken",
+      "label": "dark: ink-2 text on sunken",
+      "min": 4.5
+    },
+    {
+      "id": "theme.dark/ink-3/sunken",
+      "fg": "semantic.theme.dark.ink-3",
+      "bg": "semantic.theme.dark.sunken",
+      "label": "dark: ink-3 text on sunken",
+      "min": 4.5
+    },
+    {
+      "id": "theme.dark/accent-ink/sunken",
+      "fg": "semantic.theme.dark.accent-ink",
+      "bg": "semantic.theme.dark.sunken",
+      "label": "dark: accent-ink text on sunken",
+      "min": 4.5
+    },
+    {
+      "id": "theme.dark/ink/muted",
+      "fg": "semantic.theme.dark.ink",
+      "bg": "semantic.theme.dark.muted",
+      "label": "dark: ink text on muted",
+      "min": 4.5
+    },
+    {
+      "id": "theme.dark/ink-2/muted",
+      "fg": "semantic.theme.dark.ink-2",
+      "bg": "semantic.theme.dark.muted",
+      "label": "dark: ink-2 text on muted",
+      "min": 4.5
+    },
+    {
+      "id": "theme.dark/ink-3/muted",
+      "fg": "semantic.theme.dark.ink-3",
+      "bg": "semantic.theme.dark.muted",
+      "label": "dark: ink-3 text on muted",
+      "min": 4.5
+    },
+    {
+      "id": "theme.dark/accent-ink/muted",
+      "fg": "semantic.theme.dark.accent-ink",
+      "bg": "semantic.theme.dark.muted",
+      "label": "dark: accent-ink text on muted",
+      "min": 4.5
+    },
+    {
+      "id": "theme.dark/ink/muted-2",
+      "fg": "semantic.theme.dark.ink",
+      "bg": "semantic.theme.dark.muted-2",
+      "label": "dark: ink text on muted-2",
+      "min": 4.5
+    },
+    {
+      "id": "theme.dark/ink-2/muted-2",
+      "fg": "semantic.theme.dark.ink-2",
+      "bg": "semantic.theme.dark.muted-2",
+      "label": "dark: ink-2 text on muted-2",
+      "min": 4.5
+    },
+    {
+      "id": "theme.dark/ink-3/muted-2",
+      "fg": "semantic.theme.dark.ink-3",
+      "bg": "semantic.theme.dark.muted-2",
+      "label": "dark: ink-3 text on muted-2",
+      "min": 4.5
+    },
+    {
+      "id": "theme.dark/accent-ink/muted-2",
+      "fg": "semantic.theme.dark.accent-ink",
+      "bg": "semantic.theme.dark.muted-2",
+      "label": "dark: accent-ink text on muted-2",
+      "min": 4.5
+    },
+    {
+      "id": "theme.dark/ink/hairline",
+      "fg": "semantic.theme.dark.ink",
+      "bg": "semantic.theme.dark.hairline",
+      "label": "dark: ink text on hairline",
+      "min": 4.5
+    },
+    {
+      "id": "theme.dark/ink-2/hairline",
+      "fg": "semantic.theme.dark.ink-2",
+      "bg": "semantic.theme.dark.hairline",
+      "label": "dark: ink-2 text on hairline",
+      "min": 4.5
+    },
+    {
+      "id": "theme.dark/ink-3/hairline",
+      "fg": "semantic.theme.dark.ink-3",
+      "bg": "semantic.theme.dark.hairline",
+      "label": "dark: ink-3 text on hairline",
+      "min": 4.5
+    },
+    {
+      "id": "theme.dark/accent-ink/hairline",
+      "fg": "semantic.theme.dark.accent-ink",
+      "bg": "semantic.theme.dark.hairline",
+      "label": "dark: accent-ink text on hairline",
+      "min": 4.5
+    },
+    {
+      "id": "theme.dark/on-inverse/inverse",
+      "fg": "semantic.theme.dark.on-inverse",
+      "bg": "semantic.theme.dark.inverse",
+      "label": "dark: on-inverse text on inverse",
+      "min": 4.5
+    },
+    {
+      "id": "theme.dark/on-inverse/inverse-2",
+      "fg": "semantic.theme.dark.on-inverse",
+      "bg": "semantic.theme.dark.inverse-2",
+      "label": "dark: on-inverse text on inverse-2",
+      "min": 4.5
+    },
+    {
+      "id": "theme.dark/on-inverse-dim/inverse",
+      "fg": "semantic.theme.dark.on-inverse-dim",
+      "bg": "semantic.theme.dark.inverse",
+      "label": "dark: on-inverse-dim text on inverse",
+      "min": 4.5
+    },
+    {
+      "id": "theme.dark/on-inverse-dim/inverse-2",
+      "fg": "semantic.theme.dark.on-inverse-dim",
+      "bg": "semantic.theme.dark.inverse-2",
+      "label": "dark: on-inverse-dim text on inverse-2",
+      "min": 4.5
+    },
+    {
+      "id": "theme.dark/ok-on-dark/inverse",
+      "fg": "semantic.theme.dark.ok-on-dark",
+      "bg": "semantic.theme.dark.inverse",
+      "label": "dark: ok-on-dark text on inverse",
+      "min": 4.5
+    },
+    {
+      "id": "theme.dark/ok-on-dark/inverse-2",
+      "fg": "semantic.theme.dark.ok-on-dark",
+      "bg": "semantic.theme.dark.inverse-2",
+      "label": "dark: ok-on-dark text on inverse-2",
+      "min": 4.5
+    },
+    {
+      "id": "theme.dark/bad-on-dark/inverse",
+      "fg": "semantic.theme.dark.bad-on-dark",
+      "bg": "semantic.theme.dark.inverse",
+      "label": "dark: bad-on-dark text on inverse",
+      "min": 4.5
+    },
+    {
+      "id": "theme.dark/bad-on-dark/inverse-2",
+      "fg": "semantic.theme.dark.bad-on-dark",
+      "bg": "semantic.theme.dark.inverse-2",
+      "label": "dark: bad-on-dark text on inverse-2",
+      "min": 4.5
+    },
+    {
+      "id": "theme.dark/ok/ok-soft",
+      "fg": "semantic.theme.dark.ok",
+      "bg": "semantic.theme.dark.ok-soft",
+      "label": "dark: ok status indicator on tint",
+      "min": 3
+    },
+    {
+      "id": "theme.dark/ok/surface",
+      "fg": "semantic.theme.dark.ok",
+      "bg": "semantic.theme.dark.surface",
+      "label": "dark: ok status indicator on surface",
+      "min": 3
+    },
+    {
+      "id": "theme.dark/ok-ink/ok-soft",
+      "fg": "semantic.theme.dark.ok-ink",
+      "bg": "semantic.theme.dark.ok-soft",
+      "label": "dark: ok label on tint",
+      "min": 4.5
+    },
+    {
+      "id": "theme.dark/warn/warn-soft",
+      "fg": "semantic.theme.dark.warn",
+      "bg": "semantic.theme.dark.warn-soft",
+      "label": "dark: warn status indicator on tint",
+      "min": 3
+    },
+    {
+      "id": "theme.dark/warn/surface",
+      "fg": "semantic.theme.dark.warn",
+      "bg": "semantic.theme.dark.surface",
+      "label": "dark: warn status indicator on surface",
+      "min": 3
+    },
+    {
+      "id": "theme.dark/warn-ink/warn-soft",
+      "fg": "semantic.theme.dark.warn-ink",
+      "bg": "semantic.theme.dark.warn-soft",
+      "label": "dark: warn label on tint",
+      "min": 4.5
+    },
+    {
+      "id": "theme.dark/bad/surface",
+      "fg": "semantic.theme.dark.bad",
+      "bg": "semantic.theme.dark.surface",
+      "label": "dark: bad status indicator on surface",
+      "min": 3
+    },
+    {
+      "id": "theme.dark/bad-ink/bad-soft",
+      "fg": "semantic.theme.dark.bad-ink",
+      "bg": "semantic.theme.dark.bad-soft",
+      "label": "dark: bad label on tint",
+      "min": 4.5
+    },
+    {
+      "id": "theme.dark/accent-ink/accent-soft",
+      "fg": "semantic.theme.dark.accent-ink",
+      "bg": "semantic.theme.dark.accent-soft",
+      "label": "dark: accent text on accent tint",
+      "min": 4.5
+    },
+    {
+      "id": "theme.dark/t1-fg/t1-bg",
+      "fg": "semantic.theme.dark.t1-fg",
+      "bg": "semantic.theme.dark.t1-bg",
+      "label": "dark: avatar palette 1 initials on fill",
+      "min": 4.5
+    },
+    {
+      "id": "theme.dark/t2-fg/t2-bg",
+      "fg": "semantic.theme.dark.t2-fg",
+      "bg": "semantic.theme.dark.t2-bg",
+      "label": "dark: avatar palette 2 initials on fill",
+      "min": 4.5
+    },
+    {
+      "id": "theme.dark/t3-fg/t3-bg",
+      "fg": "semantic.theme.dark.t3-fg",
+      "bg": "semantic.theme.dark.t3-bg",
+      "label": "dark: avatar palette 3 initials on fill",
+      "min": 4.5
+    },
+    {
+      "id": "theme.dark/t4-fg/t4-bg",
+      "fg": "semantic.theme.dark.t4-fg",
+      "bg": "semantic.theme.dark.t4-bg",
+      "label": "dark: avatar palette 4 initials on fill",
+      "min": 4.5
+    },
+    {
+      "id": "theme.dark/t5-fg/t5-bg",
+      "fg": "semantic.theme.dark.t5-fg",
+      "bg": "semantic.theme.dark.t5-bg",
+      "label": "dark: avatar palette 5 initials on fill",
+      "min": 4.5
+    },
+    {
+      "id": "theme.dark/t6-fg/t6-bg",
+      "fg": "semantic.theme.dark.t6-fg",
+      "bg": "semantic.theme.dark.t6-bg",
+      "label": "dark: avatar palette 6 initials on fill",
+      "min": 4.5
+    },
+    {
+      "id": "theme.dark/ink-3/#161D25",
+      "fg": "semantic.theme.dark.ink-3",
+      "bg": "#161D25",
+      "label": "dark: tertiary text at page gradient stop",
+      "min": 4.5
+    },
+    {
+      "id": "theme.dark/ink-3/#111820",
+      "fg": "semantic.theme.dark.ink-3",
+      "bg": "#111820",
+      "label": "dark: tertiary text at page gradient stop",
+      "min": 4.5
+    },
+    {
+      "id": "theme.dark/ink-3/#0C1116",
+      "fg": "semantic.theme.dark.ink-3",
+      "bg": "#0C1116",
+      "label": "dark: tertiary text at page gradient stop",
+      "min": 4.5
+    },
+    {
+      "id": "theme.black/ink/page",
+      "fg": "semantic.theme.black.ink",
+      "bg": "semantic.theme.black.page",
+      "label": "black: ink text on page",
+      "min": 4.5
+    },
+    {
+      "id": "theme.black/ink-2/page",
+      "fg": "semantic.theme.black.ink-2",
+      "bg": "semantic.theme.black.page",
+      "label": "black: ink-2 text on page",
+      "min": 4.5
+    },
+    {
+      "id": "theme.black/ink-3/page",
+      "fg": "semantic.theme.black.ink-3",
+      "bg": "semantic.theme.black.page",
+      "label": "black: ink-3 text on page",
+      "min": 4.5
+    },
+    {
+      "id": "theme.black/accent-ink/page",
+      "fg": "semantic.theme.black.accent-ink",
+      "bg": "semantic.theme.black.page",
+      "label": "black: accent-ink text on page",
+      "min": 4.5
+    },
+    {
+      "id": "theme.black/ink/surface",
+      "fg": "semantic.theme.black.ink",
+      "bg": "semantic.theme.black.surface",
+      "label": "black: ink text on surface",
+      "min": 4.5
+    },
+    {
+      "id": "theme.black/ink-2/surface",
+      "fg": "semantic.theme.black.ink-2",
+      "bg": "semantic.theme.black.surface",
+      "label": "black: ink-2 text on surface",
+      "min": 4.5
+    },
+    {
+      "id": "theme.black/ink-3/surface",
+      "fg": "semantic.theme.black.ink-3",
+      "bg": "semantic.theme.black.surface",
+      "label": "black: ink-3 text on surface",
+      "min": 4.5
+    },
+    {
+      "id": "theme.black/accent-ink/surface",
+      "fg": "semantic.theme.black.accent-ink",
+      "bg": "semantic.theme.black.surface",
+      "label": "black: accent-ink text on surface",
+      "min": 4.5
+    },
+    {
+      "id": "theme.black/ink/sunken",
+      "fg": "semantic.theme.black.ink",
+      "bg": "semantic.theme.black.sunken",
+      "label": "black: ink text on sunken",
+      "min": 4.5
+    },
+    {
+      "id": "theme.black/ink-2/sunken",
+      "fg": "semantic.theme.black.ink-2",
+      "bg": "semantic.theme.black.sunken",
+      "label": "black: ink-2 text on sunken",
+      "min": 4.5
+    },
+    {
+      "id": "theme.black/ink-3/sunken",
+      "fg": "semantic.theme.black.ink-3",
+      "bg": "semantic.theme.black.sunken",
+      "label": "black: ink-3 text on sunken",
+      "min": 4.5
+    },
+    {
+      "id": "theme.black/accent-ink/sunken",
+      "fg": "semantic.theme.black.accent-ink",
+      "bg": "semantic.theme.black.sunken",
+      "label": "black: accent-ink text on sunken",
+      "min": 4.5
+    },
+    {
+      "id": "theme.black/ink/muted",
+      "fg": "semantic.theme.black.ink",
+      "bg": "semantic.theme.black.muted",
+      "label": "black: ink text on muted",
+      "min": 4.5
+    },
+    {
+      "id": "theme.black/ink-2/muted",
+      "fg": "semantic.theme.black.ink-2",
+      "bg": "semantic.theme.black.muted",
+      "label": "black: ink-2 text on muted",
+      "min": 4.5
+    },
+    {
+      "id": "theme.black/ink-3/muted",
+      "fg": "semantic.theme.black.ink-3",
+      "bg": "semantic.theme.black.muted",
+      "label": "black: ink-3 text on muted",
+      "min": 4.5
+    },
+    {
+      "id": "theme.black/accent-ink/muted",
+      "fg": "semantic.theme.black.accent-ink",
+      "bg": "semantic.theme.black.muted",
+      "label": "black: accent-ink text on muted",
+      "min": 4.5
+    },
+    {
+      "id": "theme.black/ink/muted-2",
+      "fg": "semantic.theme.black.ink",
+      "bg": "semantic.theme.black.muted-2",
+      "label": "black: ink text on muted-2",
+      "min": 4.5
+    },
+    {
+      "id": "theme.black/ink-2/muted-2",
+      "fg": "semantic.theme.black.ink-2",
+      "bg": "semantic.theme.black.muted-2",
+      "label": "black: ink-2 text on muted-2",
+      "min": 4.5
+    },
+    {
+      "id": "theme.black/ink-3/muted-2",
+      "fg": "semantic.theme.black.ink-3",
+      "bg": "semantic.theme.black.muted-2",
+      "label": "black: ink-3 text on muted-2",
+      "min": 4.5
+    },
+    {
+      "id": "theme.black/accent-ink/muted-2",
+      "fg": "semantic.theme.black.accent-ink",
+      "bg": "semantic.theme.black.muted-2",
+      "label": "black: accent-ink text on muted-2",
+      "min": 4.5
+    },
+    {
+      "id": "theme.black/ink/hairline",
+      "fg": "semantic.theme.black.ink",
+      "bg": "semantic.theme.black.hairline",
+      "label": "black: ink text on hairline",
+      "min": 4.5
+    },
+    {
+      "id": "theme.black/ink-2/hairline",
+      "fg": "semantic.theme.black.ink-2",
+      "bg": "semantic.theme.black.hairline",
+      "label": "black: ink-2 text on hairline",
+      "min": 4.5
+    },
+    {
+      "id": "theme.black/ink-3/hairline",
+      "fg": "semantic.theme.black.ink-3",
+      "bg": "semantic.theme.black.hairline",
+      "label": "black: ink-3 text on hairline",
+      "min": 4.5
+    },
+    {
+      "id": "theme.black/accent-ink/hairline",
+      "fg": "semantic.theme.black.accent-ink",
+      "bg": "semantic.theme.black.hairline",
+      "label": "black: accent-ink text on hairline",
+      "min": 4.5
+    },
+    {
+      "id": "theme.black/on-inverse/inverse",
+      "fg": "semantic.theme.black.on-inverse",
+      "bg": "semantic.theme.black.inverse",
+      "label": "black: on-inverse text on inverse",
+      "min": 4.5
+    },
+    {
+      "id": "theme.black/on-inverse/inverse-2",
+      "fg": "semantic.theme.black.on-inverse",
+      "bg": "semantic.theme.black.inverse-2",
+      "label": "black: on-inverse text on inverse-2",
+      "min": 4.5
+    },
+    {
+      "id": "theme.black/on-inverse-dim/inverse",
+      "fg": "semantic.theme.black.on-inverse-dim",
+      "bg": "semantic.theme.black.inverse",
+      "label": "black: on-inverse-dim text on inverse",
+      "min": 4.5
+    },
+    {
+      "id": "theme.black/on-inverse-dim/inverse-2",
+      "fg": "semantic.theme.black.on-inverse-dim",
+      "bg": "semantic.theme.black.inverse-2",
+      "label": "black: on-inverse-dim text on inverse-2",
+      "min": 4.5
+    },
+    {
+      "id": "theme.black/ok-on-dark/inverse",
+      "fg": "semantic.theme.black.ok-on-dark",
+      "bg": "semantic.theme.black.inverse",
+      "label": "black: ok-on-dark text on inverse",
+      "min": 4.5
+    },
+    {
+      "id": "theme.black/ok-on-dark/inverse-2",
+      "fg": "semantic.theme.black.ok-on-dark",
+      "bg": "semantic.theme.black.inverse-2",
+      "label": "black: ok-on-dark text on inverse-2",
+      "min": 4.5
+    },
+    {
+      "id": "theme.black/bad-on-dark/inverse",
+      "fg": "semantic.theme.black.bad-on-dark",
+      "bg": "semantic.theme.black.inverse",
+      "label": "black: bad-on-dark text on inverse",
+      "min": 4.5
+    },
+    {
+      "id": "theme.black/bad-on-dark/inverse-2",
+      "fg": "semantic.theme.black.bad-on-dark",
+      "bg": "semantic.theme.black.inverse-2",
+      "label": "black: bad-on-dark text on inverse-2",
+      "min": 4.5
+    },
+    {
+      "id": "theme.black/ok/ok-soft",
+      "fg": "semantic.theme.black.ok",
+      "bg": "semantic.theme.black.ok-soft",
+      "label": "black: ok status indicator on tint",
+      "min": 3
+    },
+    {
+      "id": "theme.black/ok/surface",
+      "fg": "semantic.theme.black.ok",
+      "bg": "semantic.theme.black.surface",
+      "label": "black: ok status indicator on surface",
+      "min": 3
+    },
+    {
+      "id": "theme.black/ok-ink/ok-soft",
+      "fg": "semantic.theme.black.ok-ink",
+      "bg": "semantic.theme.black.ok-soft",
+      "label": "black: ok label on tint",
+      "min": 4.5
+    },
+    {
+      "id": "theme.black/warn/warn-soft",
+      "fg": "semantic.theme.black.warn",
+      "bg": "semantic.theme.black.warn-soft",
+      "label": "black: warn status indicator on tint",
+      "min": 3
+    },
+    {
+      "id": "theme.black/warn/surface",
+      "fg": "semantic.theme.black.warn",
+      "bg": "semantic.theme.black.surface",
+      "label": "black: warn status indicator on surface",
+      "min": 3
+    },
+    {
+      "id": "theme.black/warn-ink/warn-soft",
+      "fg": "semantic.theme.black.warn-ink",
+      "bg": "semantic.theme.black.warn-soft",
+      "label": "black: warn label on tint",
+      "min": 4.5
+    },
+    {
+      "id": "theme.black/bad/surface",
+      "fg": "semantic.theme.black.bad",
+      "bg": "semantic.theme.black.surface",
+      "label": "black: bad status indicator on surface",
+      "min": 3
+    },
+    {
+      "id": "theme.black/bad-ink/bad-soft",
+      "fg": "semantic.theme.black.bad-ink",
+      "bg": "semantic.theme.black.bad-soft",
+      "label": "black: bad label on tint",
+      "min": 4.5
+    },
+    {
+      "id": "theme.black/accent-ink/accent-soft",
+      "fg": "semantic.theme.black.accent-ink",
+      "bg": "semantic.theme.black.accent-soft",
+      "label": "black: accent text on accent tint",
+      "min": 4.5
+    },
+    {
+      "id": "theme.black/t1-fg/t1-bg",
+      "fg": "semantic.theme.black.t1-fg",
+      "bg": "semantic.theme.black.t1-bg",
+      "label": "black: avatar palette 1 initials on fill",
+      "min": 4.5
+    },
+    {
+      "id": "theme.black/t2-fg/t2-bg",
+      "fg": "semantic.theme.black.t2-fg",
+      "bg": "semantic.theme.black.t2-bg",
+      "label": "black: avatar palette 2 initials on fill",
+      "min": 4.5
+    },
+    {
+      "id": "theme.black/t3-fg/t3-bg",
+      "fg": "semantic.theme.black.t3-fg",
+      "bg": "semantic.theme.black.t3-bg",
+      "label": "black: avatar palette 3 initials on fill",
+      "min": 4.5
+    },
+    {
+      "id": "theme.black/t4-fg/t4-bg",
+      "fg": "semantic.theme.black.t4-fg",
+      "bg": "semantic.theme.black.t4-bg",
+      "label": "black: avatar palette 4 initials on fill",
+      "min": 4.5
+    },
+    {
+      "id": "theme.black/t5-fg/t5-bg",
+      "fg": "semantic.theme.black.t5-fg",
+      "bg": "semantic.theme.black.t5-bg",
+      "label": "black: avatar palette 5 initials on fill",
+      "min": 4.5
+    },
+    {
+      "id": "theme.black/t6-fg/t6-bg",
+      "fg": "semantic.theme.black.t6-fg",
+      "bg": "semantic.theme.black.t6-bg",
+      "label": "black: avatar palette 6 initials on fill",
+      "min": 4.5
+    },
+    {
+      "id": "theme.black/ink-3/#0B0C0E",
+      "fg": "semantic.theme.black.ink-3",
+      "bg": "#0B0C0E",
+      "label": "black: tertiary text at page gradient stop",
+      "min": 4.5
+    },
+    {
+      "id": "theme.black/ink-3/#000000",
+      "fg": "semantic.theme.black.ink-3",
+      "bg": "#000000",
+      "label": "black: tertiary text at page gradient stop",
+      "min": 4.5
+    },
+    {
+      "id": "theme.light/on-inverse/action",
+      "fg": "semantic.theme.light.on-inverse",
+      "bg": "semantic.theme.light.action",
+      "label": "light: reference button or badge label on action",
+      "min": 4.5
+    },
+    {
+      "id": "theme.light/on-inverse/action-hover",
+      "fg": "semantic.theme.light.on-inverse",
+      "bg": "semantic.theme.light.action-hover",
+      "label": "light: reference button or badge label on action-hover",
+      "min": 4.5
+    },
+    {
+      "id": "theme.light/on-inverse/bad",
+      "fg": "semantic.theme.light.on-inverse",
+      "bg": "semantic.theme.light.bad",
+      "label": "light: reference button or badge label on bad",
+      "min": 4.5
+    },
+    {
+      "id": "theme.dark/on-inverse/action",
+      "fg": "semantic.theme.dark.on-inverse",
+      "bg": "semantic.theme.dark.action",
+      "label": "dark: reference button or badge label on action",
+      "min": 4.5
+    },
+    {
+      "id": "theme.dark/on-inverse/action-hover",
+      "fg": "semantic.theme.dark.on-inverse",
+      "bg": "semantic.theme.dark.action-hover",
+      "label": "dark: reference button or badge label on action-hover",
+      "min": 4.5
+    },
+    {
+      "id": "theme.dark/on-inverse/bad",
+      "fg": "semantic.theme.dark.on-inverse",
+      "bg": "semantic.theme.dark.bad",
+      "label": "dark: reference button or badge label on bad",
+      "min": 4.5
+    },
+    {
+      "id": "theme.black/on-inverse/action",
+      "fg": "semantic.theme.black.on-inverse",
+      "bg": "semantic.theme.black.action",
+      "label": "black: reference button or badge label on action",
+      "min": 4.5
+    },
+    {
+      "id": "theme.black/on-inverse/action-hover",
+      "fg": "semantic.theme.black.on-inverse",
+      "bg": "semantic.theme.black.action-hover",
+      "label": "black: reference button or badge label on action-hover",
+      "min": 4.5
+    },
+    {
+      "id": "theme.black/on-inverse/bad",
+      "fg": "semantic.theme.black.on-inverse",
+      "bg": "semantic.theme.black.bad",
+      "label": "black: reference button or badge label on bad",
+      "min": 4.5
+    },
+    {
+      "id": "theme.light/icon-ink-4/surface",
+      "fg": "semantic.theme.light.ink-4",
+      "bg": "semantic.theme.light.surface",
+      "label": "light: informative icon on surface; search, room row and mobile navigation",
+      "min": 3
+    },
+    {
+      "id": "theme.light/icon-ink-4/sunken",
+      "fg": "semantic.theme.light.ink-4",
+      "bg": "semantic.theme.light.sunken",
+      "label": "light: informative icon on sunken; search, room row and mobile navigation",
+      "min": 3
+    },
+    {
+      "id": "theme.light/icon-ink-4/muted",
+      "fg": "semantic.theme.light.ink-4",
+      "bg": "semantic.theme.light.muted",
+      "label": "light: informative icon on muted; search, room row and mobile navigation",
+      "min": 3
+    },
+    {
+      "id": "theme.light/icon-ink-4/accent-soft",
+      "fg": "semantic.theme.light.ink-4",
+      "bg": "semantic.theme.light.accent-soft",
+      "label": "light: informative icon on accent-soft; search, room row and mobile navigation",
+      "min": 3
+    },
+    {
+      "id": "theme.light/ok/inverse",
+      "fg": "semantic.theme.light.ok",
+      "bg": "semantic.theme.light.inverse",
+      "label": "light: connected-room status indicator, reference line 294",
+      "min": 3
+    },
+    {
+      "id": "theme.dark/icon-ink-4/surface",
+      "fg": "semantic.theme.dark.ink-4",
+      "bg": "semantic.theme.dark.surface",
+      "label": "dark: informative icon on surface; search, room row and mobile navigation",
+      "min": 3
+    },
+    {
+      "id": "theme.dark/icon-ink-4/sunken",
+      "fg": "semantic.theme.dark.ink-4",
+      "bg": "semantic.theme.dark.sunken",
+      "label": "dark: informative icon on sunken; search, room row and mobile navigation",
+      "min": 3
+    },
+    {
+      "id": "theme.dark/icon-ink-4/muted",
+      "fg": "semantic.theme.dark.ink-4",
+      "bg": "semantic.theme.dark.muted",
+      "label": "dark: informative icon on muted; search, room row and mobile navigation",
+      "min": 3
+    },
+    {
+      "id": "theme.dark/icon-ink-4/accent-soft",
+      "fg": "semantic.theme.dark.ink-4",
+      "bg": "semantic.theme.dark.accent-soft",
+      "label": "dark: informative icon on accent-soft; search, room row and mobile navigation",
+      "min": 3
+    },
+    {
+      "id": "theme.dark/ok/inverse",
+      "fg": "semantic.theme.dark.ok",
+      "bg": "semantic.theme.dark.inverse",
+      "label": "dark: connected-room status indicator, reference line 294",
+      "min": 3
+    },
+    {
+      "id": "theme.black/icon-ink-4/surface",
+      "fg": "semantic.theme.black.ink-4",
+      "bg": "semantic.theme.black.surface",
+      "label": "black: informative icon on surface; search, room row and mobile navigation",
+      "min": 3
+    },
+    {
+      "id": "theme.black/icon-ink-4/sunken",
+      "fg": "semantic.theme.black.ink-4",
+      "bg": "semantic.theme.black.sunken",
+      "label": "black: informative icon on sunken; search, room row and mobile navigation",
+      "min": 3
+    },
+    {
+      "id": "theme.black/icon-ink-4/muted",
+      "fg": "semantic.theme.black.ink-4",
+      "bg": "semantic.theme.black.muted",
+      "label": "black: informative icon on muted; search, room row and mobile navigation",
+      "min": 3
+    },
+    {
+      "id": "theme.black/icon-ink-4/accent-soft",
+      "fg": "semantic.theme.black.ink-4",
+      "bg": "semantic.theme.black.accent-soft",
+      "label": "black: informative icon on accent-soft; search, room row and mobile navigation",
+      "min": 3
+    },
+    {
+      "id": "theme.black/ok/inverse",
+      "fg": "semantic.theme.black.ok",
+      "bg": "semantic.theme.black.inverse",
+      "label": "black: connected-room status indicator, reference line 294",
+      "min": 3
+    }
+  ],
+  "measurements": [
+    {
+      "id": "theme.light/ink-4/page",
+      "fg": "semantic.theme.light.ink-4",
+      "bg": "semantic.theme.light.page",
+      "label": "light: ink-4 text on page; text capability probe, reference uses this role for icons",
+      "kind": "capability",
+      "purpose": "Unsupported running-text capability only. Observed icon strokes use the 3:1 rows below; reference lines 172, 203, 314 and 2256.",
+      "thresholdForComparison": 4.5
+    },
+    {
+      "id": "theme.light/ink-4/surface",
+      "fg": "semantic.theme.light.ink-4",
+      "bg": "semantic.theme.light.surface",
+      "label": "light: ink-4 text on surface; text capability probe, reference uses this role for icons",
+      "kind": "capability",
+      "purpose": "Unsupported running-text capability only. Observed icon strokes use the 3:1 rows below; reference lines 172, 203, 314 and 2256.",
+      "thresholdForComparison": 4.5
+    },
+    {
+      "id": "theme.light/ink-4/sunken",
+      "fg": "semantic.theme.light.ink-4",
+      "bg": "semantic.theme.light.sunken",
+      "label": "light: ink-4 text on sunken; text capability probe, reference uses this role for icons",
+      "kind": "capability",
+      "purpose": "Unsupported running-text capability only. Observed icon strokes use the 3:1 rows below; reference lines 172, 203, 314 and 2256.",
+      "thresholdForComparison": 4.5
+    },
+    {
+      "id": "theme.light/ink-4/muted",
+      "fg": "semantic.theme.light.ink-4",
+      "bg": "semantic.theme.light.muted",
+      "label": "light: ink-4 text on muted; text capability probe, reference uses this role for icons",
+      "kind": "capability",
+      "purpose": "Unsupported running-text capability only. Observed icon strokes use the 3:1 rows below; reference lines 172, 203, 314 and 2256.",
+      "thresholdForComparison": 4.5
+    },
+    {
+      "id": "theme.light/ink-4/muted-2",
+      "fg": "semantic.theme.light.ink-4",
+      "bg": "semantic.theme.light.muted-2",
+      "label": "light: ink-4 text on muted-2; text capability probe, reference uses this role for icons",
+      "kind": "capability",
+      "purpose": "Unsupported running-text capability only. Observed icon strokes use the 3:1 rows below; reference lines 172, 203, 314 and 2256.",
+      "thresholdForComparison": 4.5
+    },
+    {
+      "id": "theme.light/ink-4/hairline",
+      "fg": "semantic.theme.light.ink-4",
+      "bg": "semantic.theme.light.hairline",
+      "label": "light: ink-4 text on hairline; text capability probe, reference uses this role for icons",
+      "kind": "capability",
+      "purpose": "Unsupported running-text capability only. Observed icon strokes use the 3:1 rows below; reference lines 172, 203, 314 and 2256.",
+      "thresholdForComparison": 4.5
+    },
+    {
+      "id": "theme.light/border/surface",
+      "fg": "semantic.theme.light.border",
+      "bg": "semantic.theme.light.surface",
+      "label": "light: border sole meaningful boundary capability probe on surface; decorative usage still needs component review",
+      "kind": "decorative",
+      "purpose": "Decorative card, panel and separator outlines; reference lines 161, 171 and 785. A control relying only on this edge needs a separate component assessment.",
+      "thresholdForComparison": 3
+    },
+    {
+      "id": "theme.light/border-soft/surface",
+      "fg": "semantic.theme.light.border-soft",
+      "bg": "semantic.theme.light.surface",
+      "label": "light: border-soft sole meaningful boundary capability probe on surface; decorative usage still needs component review",
+      "kind": "decorative",
+      "purpose": "Decorative card, panel and separator outlines; reference lines 161, 171 and 785. A control relying only on this edge needs a separate component assessment.",
+      "thresholdForComparison": 3
+    },
+    {
+      "id": "theme.light/border-strong/surface",
+      "fg": "semantic.theme.light.border-strong",
+      "bg": "semantic.theme.light.surface",
+      "label": "light: border-strong sole meaningful boundary capability probe on surface; decorative usage still needs component review",
+      "kind": "decorative",
+      "purpose": "Decorative card, panel and separator outlines; reference lines 161, 171 and 785. A control relying only on this edge needs a separate component assessment.",
+      "thresholdForComparison": 3
+    },
+    {
+      "id": "theme.light/rail-line/inverse",
+      "fg": "semantic.theme.light.rail-line",
+      "bg": "semantic.theme.light.inverse",
+      "label": "light: rail-line sole meaningful boundary capability probe on inverse; decorative usage still needs component review",
+      "kind": "decorative",
+      "purpose": "Rail separators, room framing and track; reference lines 147, 355, 365, 381, 1714. Not the sole semantic indication of state.",
+      "thresholdForComparison": 3
+    },
+    {
+      "id": "theme.light/shadow-1/surface",
+      "fg": "semantic.theme.light.shadow-1",
+      "bg": "semantic.theme.light.surface",
+      "label": "light: shadow-1 sole meaningful boundary capability probe on surface; decorative usage still needs component review",
+      "kind": "decorative",
+      "purpose": "Decorative elevation color; no foreground content or sole control boundary.",
+      "thresholdForComparison": 3
+    },
+    {
+      "id": "theme.light/shadow-2/surface",
+      "fg": "semantic.theme.light.shadow-2",
+      "bg": "semantic.theme.light.surface",
+      "label": "light: shadow-2 sole meaningful boundary capability probe on surface; decorative usage still needs component review",
+      "kind": "decorative",
+      "purpose": "Decorative popover elevation color; reference conversation dock line 1663. Blur is not a solid boundary.",
+      "thresholdForComparison": 3
+    },
+    {
+      "id": "theme.light/ok-border/ok-soft",
+      "fg": "semantic.theme.light.ok-border",
+      "bg": "semantic.theme.light.ok-soft",
+      "label": "light: ok-border sole meaningful boundary capability probe on ok-soft; decorative usage still needs component review",
+      "kind": "decorative",
+      "purpose": "Status badge decoration; status is carried by visible text; reference line 96.",
+      "thresholdForComparison": 3
+    },
+    {
+      "id": "theme.light/bad/bad-soft",
+      "fg": "semantic.theme.light.bad",
+      "bg": "semantic.theme.light.bad-soft",
+      "label": "light: bad status indicator on tint",
+      "kind": "capability",
+      "purpose": "Status dot on a danger tint capability. Observed danger tint text/icons use bad-ink; reference lines 1910, 2063, 2146.",
+      "thresholdForComparison": 3
+    },
+    {
+      "id": "theme.light/action/surface",
+      "fg": "semantic.theme.light.action",
+      "bg": "semantic.theme.light.surface",
+      "label": "light: action inline link on surface",
+      "kind": "capability",
+      "purpose": "Inline-text capability only; actual reference actions use a colored button fill and on-inverse label (lines 342, 1758, 2636). Inline content links use accent-ink.",
+      "thresholdForComparison": 4.5
+    },
+    {
+      "id": "theme.light/white/action",
+      "fg": "color.white",
+      "bg": "semantic.theme.light.action",
+      "label": "light: white label on action button",
+      "kind": "capability",
+      "purpose": "Pure white label capability. Actual buttons use theme-specific on-inverse; normative rows measure that value.",
+      "thresholdForComparison": 4.5
+    },
+    {
+      "id": "theme.light/action-hover/surface",
+      "fg": "semantic.theme.light.action-hover",
+      "bg": "semantic.theme.light.surface",
+      "label": "light: action-hover inline link on surface",
+      "kind": "capability",
+      "purpose": "Inline-text capability only; actual reference actions use a colored button fill and on-inverse label (lines 342, 1758, 2636). Inline content links use accent-ink.",
+      "thresholdForComparison": 4.5
+    },
+    {
+      "id": "theme.light/white/action-hover",
+      "fg": "color.white",
+      "bg": "semantic.theme.light.action-hover",
+      "label": "light: white label on action-hover button",
+      "kind": "capability",
+      "purpose": "Pure white label capability. Actual buttons use theme-specific on-inverse; normative rows measure that value.",
+      "thresholdForComparison": 4.5
+    },
+    {
+      "id": "theme.dark/ink-4/page",
+      "fg": "semantic.theme.dark.ink-4",
+      "bg": "semantic.theme.dark.page",
+      "label": "dark: ink-4 text on page; text capability probe, reference uses this role for icons",
+      "kind": "capability",
+      "purpose": "Unsupported running-text capability only. Observed icon strokes use the 3:1 rows below; reference lines 172, 203, 314 and 2256.",
+      "thresholdForComparison": 4.5
+    },
+    {
+      "id": "theme.dark/ink-4/surface",
+      "fg": "semantic.theme.dark.ink-4",
+      "bg": "semantic.theme.dark.surface",
+      "label": "dark: ink-4 text on surface; text capability probe, reference uses this role for icons",
+      "kind": "capability",
+      "purpose": "Unsupported running-text capability only. Observed icon strokes use the 3:1 rows below; reference lines 172, 203, 314 and 2256.",
+      "thresholdForComparison": 4.5
+    },
+    {
+      "id": "theme.dark/ink-4/sunken",
+      "fg": "semantic.theme.dark.ink-4",
+      "bg": "semantic.theme.dark.sunken",
+      "label": "dark: ink-4 text on sunken; text capability probe, reference uses this role for icons",
+      "kind": "capability",
+      "purpose": "Unsupported running-text capability only. Observed icon strokes use the 3:1 rows below; reference lines 172, 203, 314 and 2256.",
+      "thresholdForComparison": 4.5
+    },
+    {
+      "id": "theme.dark/ink-4/muted",
+      "fg": "semantic.theme.dark.ink-4",
+      "bg": "semantic.theme.dark.muted",
+      "label": "dark: ink-4 text on muted; text capability probe, reference uses this role for icons",
+      "kind": "capability",
+      "purpose": "Unsupported running-text capability only. Observed icon strokes use the 3:1 rows below; reference lines 172, 203, 314 and 2256.",
+      "thresholdForComparison": 4.5
+    },
+    {
+      "id": "theme.dark/ink-4/muted-2",
+      "fg": "semantic.theme.dark.ink-4",
+      "bg": "semantic.theme.dark.muted-2",
+      "label": "dark: ink-4 text on muted-2; text capability probe, reference uses this role for icons",
+      "kind": "capability",
+      "purpose": "Unsupported running-text capability only. Observed icon strokes use the 3:1 rows below; reference lines 172, 203, 314 and 2256.",
+      "thresholdForComparison": 4.5
+    },
+    {
+      "id": "theme.dark/ink-4/hairline",
+      "fg": "semantic.theme.dark.ink-4",
+      "bg": "semantic.theme.dark.hairline",
+      "label": "dark: ink-4 text on hairline; text capability probe, reference uses this role for icons",
+      "kind": "capability",
+      "purpose": "Unsupported running-text capability only. Observed icon strokes use the 3:1 rows below; reference lines 172, 203, 314 and 2256.",
+      "thresholdForComparison": 4.5
+    },
+    {
+      "id": "theme.dark/border/surface",
+      "fg": "semantic.theme.dark.border",
+      "bg": "semantic.theme.dark.surface",
+      "label": "dark: border sole meaningful boundary capability probe on surface; decorative usage still needs component review",
+      "kind": "decorative",
+      "purpose": "Decorative card, panel and separator outlines; reference lines 161, 171 and 785. A control relying only on this edge needs a separate component assessment.",
+      "thresholdForComparison": 3
+    },
+    {
+      "id": "theme.dark/border-soft/surface",
+      "fg": "semantic.theme.dark.border-soft",
+      "bg": "semantic.theme.dark.surface",
+      "label": "dark: border-soft sole meaningful boundary capability probe on surface; decorative usage still needs component review",
+      "kind": "decorative",
+      "purpose": "Decorative card, panel and separator outlines; reference lines 161, 171 and 785. A control relying only on this edge needs a separate component assessment.",
+      "thresholdForComparison": 3
+    },
+    {
+      "id": "theme.dark/border-strong/surface",
+      "fg": "semantic.theme.dark.border-strong",
+      "bg": "semantic.theme.dark.surface",
+      "label": "dark: border-strong sole meaningful boundary capability probe on surface; decorative usage still needs component review",
+      "kind": "decorative",
+      "purpose": "Decorative card, panel and separator outlines; reference lines 161, 171 and 785. A control relying only on this edge needs a separate component assessment.",
+      "thresholdForComparison": 3
+    },
+    {
+      "id": "theme.dark/rail-line/inverse",
+      "fg": "semantic.theme.dark.rail-line",
+      "bg": "semantic.theme.dark.inverse",
+      "label": "dark: rail-line sole meaningful boundary capability probe on inverse; decorative usage still needs component review",
+      "kind": "decorative",
+      "purpose": "Rail separators, room framing and track; reference lines 147, 355, 365, 381, 1714. Not the sole semantic indication of state.",
+      "thresholdForComparison": 3
+    },
+    {
+      "id": "theme.dark/shadow-1/surface",
+      "fg": "semantic.theme.dark.shadow-1",
+      "bg": "semantic.theme.dark.surface",
+      "label": "dark: shadow-1 sole meaningful boundary capability probe on surface; decorative usage still needs component review",
+      "kind": "decorative",
+      "purpose": "Decorative elevation color; no foreground content or sole control boundary.",
+      "thresholdForComparison": 3
+    },
+    {
+      "id": "theme.dark/shadow-2/surface",
+      "fg": "semantic.theme.dark.shadow-2",
+      "bg": "semantic.theme.dark.surface",
+      "label": "dark: shadow-2 sole meaningful boundary capability probe on surface; decorative usage still needs component review",
+      "kind": "decorative",
+      "purpose": "Decorative popover elevation color; reference conversation dock line 1663. Blur is not a solid boundary.",
+      "thresholdForComparison": 3
+    },
+    {
+      "id": "theme.dark/ok-border/ok-soft",
+      "fg": "semantic.theme.dark.ok-border",
+      "bg": "semantic.theme.dark.ok-soft",
+      "label": "dark: ok-border sole meaningful boundary capability probe on ok-soft; decorative usage still needs component review",
+      "kind": "decorative",
+      "purpose": "Status badge decoration; status is carried by visible text; reference line 96.",
+      "thresholdForComparison": 3
+    },
+    {
+      "id": "theme.dark/bad/bad-soft",
+      "fg": "semantic.theme.dark.bad",
+      "bg": "semantic.theme.dark.bad-soft",
+      "label": "dark: bad status indicator on tint",
+      "kind": "capability",
+      "purpose": "Status dot on a danger tint capability. Observed danger tint text/icons use bad-ink; reference lines 1910, 2063, 2146.",
+      "thresholdForComparison": 3
+    },
+    {
+      "id": "theme.dark/action/surface",
+      "fg": "semantic.theme.dark.action",
+      "bg": "semantic.theme.dark.surface",
+      "label": "dark: action inline link on surface",
+      "kind": "capability",
+      "purpose": "Inline-text capability only; actual reference actions use a colored button fill and on-inverse label (lines 342, 1758, 2636). Inline content links use accent-ink.",
+      "thresholdForComparison": 4.5
+    },
+    {
+      "id": "theme.dark/white/action",
+      "fg": "color.white",
+      "bg": "semantic.theme.dark.action",
+      "label": "dark: white label on action button",
+      "kind": "capability",
+      "purpose": "Pure white label capability. Actual buttons use theme-specific on-inverse; normative rows measure that value.",
+      "thresholdForComparison": 4.5
+    },
+    {
+      "id": "theme.dark/action-hover/surface",
+      "fg": "semantic.theme.dark.action-hover",
+      "bg": "semantic.theme.dark.surface",
+      "label": "dark: action-hover inline link on surface",
+      "kind": "capability",
+      "purpose": "Inline-text capability only; actual reference actions use a colored button fill and on-inverse label (lines 342, 1758, 2636). Inline content links use accent-ink.",
+      "thresholdForComparison": 4.5
+    },
+    {
+      "id": "theme.dark/white/action-hover",
+      "fg": "color.white",
+      "bg": "semantic.theme.dark.action-hover",
+      "label": "dark: white label on action-hover button",
+      "kind": "capability",
+      "purpose": "Pure white label capability. Actual buttons use theme-specific on-inverse; normative rows measure that value.",
+      "thresholdForComparison": 4.5
+    },
+    {
+      "id": "theme.black/ink-4/page",
+      "fg": "semantic.theme.black.ink-4",
+      "bg": "semantic.theme.black.page",
+      "label": "black: ink-4 text on page; text capability probe, reference uses this role for icons",
+      "kind": "capability",
+      "purpose": "Unsupported running-text capability only. Observed icon strokes use the 3:1 rows below; reference lines 172, 203, 314 and 2256.",
+      "thresholdForComparison": 4.5
+    },
+    {
+      "id": "theme.black/ink-4/surface",
+      "fg": "semantic.theme.black.ink-4",
+      "bg": "semantic.theme.black.surface",
+      "label": "black: ink-4 text on surface; text capability probe, reference uses this role for icons",
+      "kind": "capability",
+      "purpose": "Unsupported running-text capability only. Observed icon strokes use the 3:1 rows below; reference lines 172, 203, 314 and 2256.",
+      "thresholdForComparison": 4.5
+    },
+    {
+      "id": "theme.black/ink-4/sunken",
+      "fg": "semantic.theme.black.ink-4",
+      "bg": "semantic.theme.black.sunken",
+      "label": "black: ink-4 text on sunken; text capability probe, reference uses this role for icons",
+      "kind": "capability",
+      "purpose": "Unsupported running-text capability only. Observed icon strokes use the 3:1 rows below; reference lines 172, 203, 314 and 2256.",
+      "thresholdForComparison": 4.5
+    },
+    {
+      "id": "theme.black/ink-4/muted",
+      "fg": "semantic.theme.black.ink-4",
+      "bg": "semantic.theme.black.muted",
+      "label": "black: ink-4 text on muted; text capability probe, reference uses this role for icons",
+      "kind": "capability",
+      "purpose": "Unsupported running-text capability only. Observed icon strokes use the 3:1 rows below; reference lines 172, 203, 314 and 2256.",
+      "thresholdForComparison": 4.5
+    },
+    {
+      "id": "theme.black/ink-4/muted-2",
+      "fg": "semantic.theme.black.ink-4",
+      "bg": "semantic.theme.black.muted-2",
+      "label": "black: ink-4 text on muted-2; text capability probe, reference uses this role for icons",
+      "kind": "capability",
+      "purpose": "Unsupported running-text capability only. Observed icon strokes use the 3:1 rows below; reference lines 172, 203, 314 and 2256.",
+      "thresholdForComparison": 4.5
+    },
+    {
+      "id": "theme.black/ink-4/hairline",
+      "fg": "semantic.theme.black.ink-4",
+      "bg": "semantic.theme.black.hairline",
+      "label": "black: ink-4 text on hairline; text capability probe, reference uses this role for icons",
+      "kind": "capability",
+      "purpose": "Unsupported running-text capability only. Observed icon strokes use the 3:1 rows below; reference lines 172, 203, 314 and 2256.",
+      "thresholdForComparison": 4.5
+    },
+    {
+      "id": "theme.black/border/surface",
+      "fg": "semantic.theme.black.border",
+      "bg": "semantic.theme.black.surface",
+      "label": "black: border sole meaningful boundary capability probe on surface; decorative usage still needs component review",
+      "kind": "decorative",
+      "purpose": "Decorative card, panel and separator outlines; reference lines 161, 171 and 785. A control relying only on this edge needs a separate component assessment.",
+      "thresholdForComparison": 3
+    },
+    {
+      "id": "theme.black/border-soft/surface",
+      "fg": "semantic.theme.black.border-soft",
+      "bg": "semantic.theme.black.surface",
+      "label": "black: border-soft sole meaningful boundary capability probe on surface; decorative usage still needs component review",
+      "kind": "decorative",
+      "purpose": "Decorative card, panel and separator outlines; reference lines 161, 171 and 785. A control relying only on this edge needs a separate component assessment.",
+      "thresholdForComparison": 3
+    },
+    {
+      "id": "theme.black/border-strong/surface",
+      "fg": "semantic.theme.black.border-strong",
+      "bg": "semantic.theme.black.surface",
+      "label": "black: border-strong sole meaningful boundary capability probe on surface; decorative usage still needs component review",
+      "kind": "decorative",
+      "purpose": "Decorative card, panel and separator outlines; reference lines 161, 171 and 785. A control relying only on this edge needs a separate component assessment.",
+      "thresholdForComparison": 3
+    },
+    {
+      "id": "theme.black/rail-line/inverse",
+      "fg": "semantic.theme.black.rail-line",
+      "bg": "semantic.theme.black.inverse",
+      "label": "black: rail-line sole meaningful boundary capability probe on inverse; decorative usage still needs component review",
+      "kind": "decorative",
+      "purpose": "Rail separators, room framing and track; reference lines 147, 355, 365, 381, 1714. Not the sole semantic indication of state.",
+      "thresholdForComparison": 3
+    },
+    {
+      "id": "theme.black/shadow-1/surface",
+      "fg": "semantic.theme.black.shadow-1",
+      "bg": "semantic.theme.black.surface",
+      "label": "black: shadow-1 sole meaningful boundary capability probe on surface; decorative usage still needs component review",
+      "kind": "decorative",
+      "purpose": "Decorative elevation color; no foreground content or sole control boundary.",
+      "thresholdForComparison": 3
+    },
+    {
+      "id": "theme.black/shadow-2/surface",
+      "fg": "semantic.theme.black.shadow-2",
+      "bg": "semantic.theme.black.surface",
+      "label": "black: shadow-2 sole meaningful boundary capability probe on surface; decorative usage still needs component review",
+      "kind": "decorative",
+      "purpose": "Decorative popover elevation color; reference conversation dock line 1663. Blur is not a solid boundary.",
+      "thresholdForComparison": 3
+    },
+    {
+      "id": "theme.black/ok-border/ok-soft",
+      "fg": "semantic.theme.black.ok-border",
+      "bg": "semantic.theme.black.ok-soft",
+      "label": "black: ok-border sole meaningful boundary capability probe on ok-soft; decorative usage still needs component review",
+      "kind": "decorative",
+      "purpose": "Status badge decoration; status is carried by visible text; reference line 96.",
+      "thresholdForComparison": 3
+    },
+    {
+      "id": "theme.black/bad/bad-soft",
+      "fg": "semantic.theme.black.bad",
+      "bg": "semantic.theme.black.bad-soft",
+      "label": "black: bad status indicator on tint",
+      "kind": "capability",
+      "purpose": "Status dot on a danger tint capability. Observed danger tint text/icons use bad-ink; reference lines 1910, 2063, 2146.",
+      "thresholdForComparison": 3
+    },
+    {
+      "id": "theme.black/action/surface",
+      "fg": "semantic.theme.black.action",
+      "bg": "semantic.theme.black.surface",
+      "label": "black: action inline link on surface",
+      "kind": "capability",
+      "purpose": "Inline-text capability only; actual reference actions use a colored button fill and on-inverse label (lines 342, 1758, 2636). Inline content links use accent-ink.",
+      "thresholdForComparison": 4.5
+    },
+    {
+      "id": "theme.black/white/action",
+      "fg": "color.white",
+      "bg": "semantic.theme.black.action",
+      "label": "black: white label on action button",
+      "kind": "capability",
+      "purpose": "Pure white label capability. Actual buttons use theme-specific on-inverse; normative rows measure that value.",
+      "thresholdForComparison": 4.5
+    },
+    {
+      "id": "theme.black/action-hover/surface",
+      "fg": "semantic.theme.black.action-hover",
+      "bg": "semantic.theme.black.surface",
+      "label": "black: action-hover inline link on surface",
+      "kind": "capability",
+      "purpose": "Inline-text capability only; actual reference actions use a colored button fill and on-inverse label (lines 342, 1758, 2636). Inline content links use accent-ink.",
+      "thresholdForComparison": 4.5
+    },
+    {
+      "id": "theme.black/white/action-hover",
+      "fg": "color.white",
+      "bg": "semantic.theme.black.action-hover",
+      "label": "black: white label on action-hover button",
+      "kind": "capability",
+      "purpose": "Pure white label capability. Actual buttons use theme-specific on-inverse; normative rows measure that value.",
+      "thresholdForComparison": 4.5
     }
   ]
 }
