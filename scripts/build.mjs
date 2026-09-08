@@ -161,6 +161,7 @@ function buildCss() {
     ],
     ['semantic — text', pick('semantic.text').map(declare)],
     ['semantic — actions', [...pick('semantic.action').map(declare), `  --focus-ring: ${focus};`]],
+    ['semantic — controls', pick('semantic.control').map(declare)],
     ['type', pick('font').map(declare)],
     ['space (4px base)', pick('space').map(declare)],
     ['radius', pick('radius').map(declare)],
@@ -237,7 +238,7 @@ function buildPreset() {
     if (key.startsWith('$')) continue;
     colors[key] = '$value' in child ? flat(`color.${key}`) : scaleObject(`color.${key}`);
   }
-  for (const t of pick('semantic')) colors[mechanicalName(t.path)] = flat(t.path);
+  for (const t of pick('semantic').filter((t) => t.type === 'color')) colors[mechanicalName(t.path)] = flat(t.path);
   for (const [nick, path] of Object.entries(PRESET_NICKNAMES)) colors[nick] = flat(path);
 
   const shadows = Object.fromEntries(
@@ -264,7 +265,7 @@ function buildPreset() {
     boxShadow: shadows,
     backgroundImage: { frost: gradient },
     ringColor: { DEFAULT: rgba(flat(SPEC.focusRing.source), SPEC.focusRing.alpha) },
-    ringWidth: { DEFAULT: SPEC.focusRing.width },
+    ringWidth: { DEFAULT: SPEC.focusRing.width, 'control-selection': flat('semantic.control.selection-ring-width') },
     transitionTimingFunction: Object.fromEntries(
       pick('motion.easing').map((t) => [t.path.slice('motion.easing.'.length), cssValue(t)]),
     ),
