@@ -1428,17 +1428,17 @@
       "min": 3
     },
     {
-      "id": "theme.light/icon-ink-4/accent-soft",
-      "fg": "semantic.theme.light.ink-4",
+      "id": "theme.light/icon-ink-3/accent-soft",
+      "fg": "semantic.theme.light.ink-3",
       "bg": "semantic.theme.light.accent-soft",
-      "label": "light: informative icon on accent-soft; search, room row and mobile navigation",
+      "label": "light: informative icon on accent-soft; the selected room row, decided ink-3 (unselected rows keep ink-4 on surface, sunken and muted)",
       "min": 3
     },
     {
-      "id": "theme.light/ok/inverse",
-      "fg": "semantic.theme.light.ok",
+      "id": "theme.light/indicator-ok-on-dark/inverse",
+      "fg": "semantic.theme.light.ok-on-dark",
       "bg": "semantic.theme.light.inverse",
-      "label": "light: connected-room status indicator, reference line 294",
+      "label": "light: connected-room status indicator on inverse, reference line 294; decided ok-on-dark (the 4.5:1 text row above covers the same pair)",
       "min": 3
     },
     {
