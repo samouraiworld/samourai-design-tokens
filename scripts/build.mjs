@@ -17,6 +17,7 @@
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { ROOT, loadTokens, walkTokens, indexTokens, resolve, resolveValue, parseColor } from './lib/tokens.mjs';
+import { SPEC, focusRingLayers, focusRingIndicator } from './lib/spec.mjs';
 
 const DIST = join(ROOT, 'dist');
 const CHECK = process.argv.includes('--check');
@@ -32,22 +33,12 @@ const flat = (path) => {
 };
 
 // --- Spec constants ---------------------------------------------------------
-// Values the design system fixes but tokens.json v0.1 does not yet carry as
-// tokens. Each is asserted against a token it derives from, so a palette change
+// The page gradient and the focus ring are fixed by the design system and are
+// not tokens in v0.1. They live in scripts/lib/spec.mjs because the contrast
+// gate reads them too: a geometry only the build knows is a geometry no check
+// can measure. Each is anchored to a token it derives from, so a palette change
 // flows through and a token rename fails the build rather than the browser.
-const SPEC = {
-  // DESIGN_SYSTEM.md §2: "frost gradient 115deg #DCE6F0 → #EEF3F8 (45%) → #FFFFFF".
-  pageGradient: { angle: '115deg', stops: [['color.frost.200', '0%'], ['color.frost.100', '45%'], ['color.white', '100%']] },
-  // COMPONENTS.md delivered the ring as "0 0 0 3px rgba(43,75,219,.35) on
-  // every interactive element". That halo alone composites to #B5C0F2 on white
-  // and measures 1.78:1, which does not satisfy SC 1.4.11 for the one indicator
-  // a keyboard user has to locate themselves with. The ring is now two-tone: an
-  // opaque core in the action colour — 6.70:1 on white, 6.01:1 on the page —
-  // with the delivered halo kept at its 3 px width, pushed outside the core.
-  // The core is what contrast-pairs.json measures, because it is what carries
-  // the indicator; the halo stays because it is what makes it read as a ring.
-  focusRing: { source: 'semantic.action.primary', core: '2px', halo: '5px', haloAlpha: 0.35 },
-};
+// ADR-0002.
 
 // --- Path → CSS custom property --------------------------------------------
 const kebab = (s) => s.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
@@ -132,6 +123,11 @@ function rgba(hex, alpha) {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
+/** A focus-ring layer as CSS: the token's own hex when opaque, `rgba()` when not. */
+function tone(layer) {
+  return layer.alpha === 1 ? layer.literal : rgba(layer.literal, layer.alpha);
+}
+
 // --- dist/tokens.css --------------------------------------------------------
 const HEADER = `/* GENERATED FILE — DO NOT EDIT.
    Written by scripts/build.mjs from tokens.json, which is the source of truth.
@@ -153,10 +149,9 @@ function buildCss() {
     .map(([path, stop]) => `var(--${cssName(path)}) ${stop}`)
     .join(', ')})`;
 
-  const ring = flat(SPEC.focusRing.source);
-  const focus =
-    `0 0 0 ${SPEC.focusRing.core} ${ring}, ` +
-    `0 0 0 ${SPEC.focusRing.halo} ${rgba(ring, SPEC.focusRing.haloAlpha)}`;
+  // One box-shadow per tone, in the order lib/spec.mjs lists them: innermost
+  // first, which is the order box-shadow paints on top in.
+  const focus = focusRingLayers(index).map((layer) => `0 0 0 ${layer.width} ${tone(layer)}`).join(', ');
 
   const sections = [
     ['primitives — colour', pick('color').map(declare)],
@@ -272,10 +267,10 @@ function buildPreset() {
     borderRadius: withDefaults('borderRadius', scaleObject('radius')),
     boxShadow: shadows,
     backgroundImage: { frost: gradient },
-    // Tailwind's ring utility is single-tone, so it carries the opaque core —
-    // the part SC 1.4.11 measures. The full two-tone ring is on --focus-ring.
-    ringColor: { DEFAULT: flat(SPEC.focusRing.source) },
-    ringWidth: { DEFAULT: SPEC.focusRing.core },
+    // Tailwind's ring utility is single-tone, so it carries the indicator —
+    // the tone SC 1.4.11 measures. The full two-tone ring is on --focus-ring.
+    ringColor: { DEFAULT: tone(focusRingIndicator(index)) },
+    ringWidth: { DEFAULT: focusRingIndicator(index).width },
     transitionTimingFunction: Object.fromEntries(
       pick('motion.easing').map((t) => [t.path.slice('motion.easing.'.length), cssValue(t)]),
     ),

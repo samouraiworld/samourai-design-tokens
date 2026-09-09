@@ -1,5 +1,5 @@
 {
-  "$comment": "The accessibility contract as data. The four load-bearing fields of a row — `fg`, `bg`, `label`, `min` — are the same four values samourai-visio/scripts/check-contrast.py carries in the `PAIRINGS` tuples it hardcodes; that script reads no JSON and this file is not an input to it. The shape is deliberate all the same, so a pairing can move from there to here without being reinterpreted. `fg` and `bg` are token paths from tokens.json, or a literal #hex. `min` is 4.5 for text (WCAG 2.1 SC 1.4.3) or 3.0 for a non-text boundary, control edge or focus indicator (SC 1.4.11); the large-text 3:1 exemption is not used anywhere in this system. `fgAlpha` composites the foreground over the background before measuring — a translucent colour measured as if it were opaque reports a ratio no user ever sees. `exempt` records a row that is measured and reported but not gated. `expect: \"fail\"` inverts the row: it is a pair the design system forbids, and the gate fails if it ever starts passing, because that means the palette moved under the rule.",
+  "$comment": "The accessibility contract as data. The four load-bearing fields of a row — `fg`, `bg`, `label`, `min` — are the same four values samourai-visio/scripts/check-contrast.py carries in the `PAIRINGS` tuples it hardcodes; that script reads no JSON and this file is not an input to it. The shape is deliberate all the same, so a pairing can move from there to here without being reinterpreted. `fg` and `bg` are token paths from tokens.json, or a literal #hex. `min` is 4.5 for text (WCAG 2.1 SC 1.4.3) or 3.0 for a non-text boundary, control edge or focus indicator (SC 1.4.11); the large-text 3:1 exemption is not used anywhere in this system. A translucent foreground is composited over its background before it is measured, always: the alpha travels with the colour and no row can opt out, because a translucent colour measured as if it were opaque reports a ratio no user ever sees. `fg` may also be a `spec:` role rather than a token — `spec:focus-ring.indicator` is the ring tone painted against the control, `spec:focus-ring.outer` the tone painted onto the background — which resolves to a colour scripts/lib/spec.mjs composes for the build, at its real alpha. That is what keeps these rows measuring the focus ring that ships rather than a token named after it (ADR-0002). `exempt` records a row that is measured and reported but not gated. `expect: \"fail\"` inverts the row: it is a pair the design system forbids, and the gate fails if it ever starts passing, because that means the palette moved under the rule.",
   "pairs": [
     {
       "id": "text.primary/surface.default",
@@ -269,17 +269,33 @@
 
     {
       "id": "focus-ring/surface.default",
-      "fg": "semantic.action.primary",
+      "fg": "spec:focus-ring.indicator",
       "bg": "semantic.surface.default",
-      "label": "focus ring on white — the opaque 2 px core of the two-tone ring, which is what the indicator is made of (non-text, 1.4.11)",
+      "label": "focus ring on white — the ring's innermost tone as the build composes it, which is the tone that sits against the control and the one a keyboard user has to find (non-text, 1.4.11)",
       "min": 3.0
     },
     {
       "id": "focus-ring/surface.page",
-      "fg": "semantic.action.primary",
+      "fg": "spec:focus-ring.indicator",
       "bg": "semantic.surface.page",
-      "label": "focus ring on the page (frost.100) — same core, measured off a card (non-text, 1.4.11)",
+      "label": "focus ring on the page (frost.100) — same tone, measured off a card (non-text, 1.4.11)",
       "min": 3.0
+    },
+    {
+      "id": "focus-ring-halo/surface.default",
+      "fg": "spec:focus-ring.outer",
+      "bg": "semantic.surface.default",
+      "label": "the ring's outermost tone alone on white, at its own alpha — 1.78:1. This is the single-tone ring COMPONENTS.md delivered, and it is the reason the ring gained an opaque core: a 35 % halo is not an indicator. The row is inverted, so the halo cannot be quietly promoted back to carrying the ring on its own — if it ever clears 3:1 the two-tone construction is doing nothing and someone has to say which tone the indicator is",
+      "min": 3.0,
+      "expect": "fail"
+    },
+    {
+      "id": "focus-ring-halo/surface.page",
+      "fg": "spec:focus-ring.outer",
+      "bg": "semantic.surface.page",
+      "label": "the same outermost tone on the page (frost.100) — 1.74:1. Both surfaces stay listed so neither is forgotten when the ring is revisited",
+      "min": 3.0,
+      "expect": "fail"
     },
 
     {

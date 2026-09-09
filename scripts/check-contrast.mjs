@@ -2,13 +2,20 @@
 // Contrast gate — WCAG 2.1 relative luminance, the same maths as
 // samourai-visio/scripts/check-contrast.py, run over contrast-pairs.json.
 //
-// The three ways a contrast suite lies, and what stops each here:
+// The four ways a contrast suite lies, and what stops each here:
 //
-//   A translucent colour is measured as if it were opaque.  `fgAlpha`
-//     composites the foreground onto the background first. That is how the
-//     focus ring delivered at 35 % alpha was recorded at the 1.78:1 users saw
-//     rather than the 6.70:1 an opaque cobalt reports; the ring is two-tone
-//     now, and the field is here for the next translucent colour.
+//   A translucent colour is measured as if it were opaque.  Every foreground
+//     is composited onto its background before it is measured, at whatever
+//     alpha the colour itself carries. There is no per-row field to omit and
+//     no branch to skip: the focus ring's halo reports 6.70:1 read as opaque
+//     cobalt and the 1.78:1 it actually paints once composited, and that
+//     difference is the whole distance between an indicator that satisfies
+//     SC 1.4.11 and one that only says it does.
+//   A colour the build composes is not measured at all.  A `spec:` reference
+//     reads the ring out of scripts/lib/spec.mjs by role — the tone against
+//     the control, the tone against the background — so these rows measure the
+//     ring that ships. A geometry change moves the rows with it; it cannot
+//     leave them describing a ring that is no longer there. ADR-0002.
 //   A renamed token silently empties the suite.  An unresolvable pair is a
 //     hard FAIL, never a skipped row.
 //   A failure is "temporarily" tolerated and nobody remembers.  A failing pair
@@ -18,6 +25,7 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { ROOT, loadTokens, indexTokens, resolve, parseColor, composite, contrastRatio, toHex } from './lib/tokens.mjs';
+import { SPEC_COLORS } from './lib/spec.mjs';
 
 const tree = loadTokens();
 const index = indexTokens(tree);
@@ -28,8 +36,15 @@ const allowFile = join(ROOT, 'contrast-known-failures.json');
 const allowlist = existsSync(allowFile) ? JSON.parse(readFileSync(allowFile, 'utf8')) : { failures: [] };
 const allowed = new Map(allowlist.failures.map((f) => [f.id, { ...f, used: false }]));
 
-/** A token path or a literal colour, resolved to `{r, g, b, a}`. */
+/** A `spec:` role, a token path, or a literal colour, resolved to `{r, g, b, a}`. */
 function colorOf(ref) {
+  if (typeof ref === 'string' && ref.startsWith('spec:')) {
+    const role = SPEC_COLORS[ref];
+    // Not a fall-through to token resolution: a misspelt role that quietly
+    // became a dangling token path would read as the wrong kind of mistake.
+    if (!role) throw new Error(`unknown spec reference "${ref}" — the roles are ${Object.keys(SPEC_COLORS).join(', ')}`);
+    return role(index);
+  }
   if (typeof ref === 'string' && (ref.startsWith('#') || ref.startsWith('rgb'))) return parseColor(ref);
   return parseColor(resolve(ref, index));
 }
@@ -42,9 +57,14 @@ for (const pair of pairs) {
 
   try {
     const bg = colorOf(pair.bg);
-    let fg = colorOf(pair.fg);
-    if (pair.fgAlpha !== undefined) fg = composite({ ...fg, a: pair.fgAlpha }, bg);
-    else fg = composite(fg, bg);
+    // A translucent background would be measured as the colour behind it and
+    // nothing would say so — the same silence this gate exists to break.
+    if ((bg.a ?? 1) < 1) {
+      throw new Error(`background "${pair.bg}" is translucent; a row measures against what is actually painted there`);
+    }
+    // Unconditional. A row cannot opt out of compositing, because the one that
+    // did is how a 1.78:1 focus ring passed at 6.70:1.
+    const fg = composite(colorOf(pair.fg), bg);
     row.fgHex = toHex(fg);
     row.bgHex = toHex(bg);
     row.ratio = contrastRatio(fg, bg);

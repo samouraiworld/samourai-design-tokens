@@ -104,7 +104,9 @@ Versioning follows ADR-0004 and DESIGN_HANDOFF F5: renaming or removing a token 
 
 ## The source of truth is the design workstream's values
 
-`tokens.json` is carried **verbatim** from the design drop, byte for byte. This repository generates from it and measures it; it does not edit it. A change to a token value is a design decision and arrives as a PR here, with the contrast gate green or an allowlist entry carrying a reason. It is never a build fix.
+`tokens.json` is the design workstream's delivery. This repository generates from it and measures it; it does not **decide** it. A change to a token value is a design decision and arrives as a PR here carrying three things — the decision, the ratio it now measures in the token's `$description`, and the contrast gate green — or an allowlist entry naming the decision it is still waiting on. It is never a build fix. Three primitives have moved that way, in one signed pass: `color.slate.600`, `color.slate.700` and `semantic.border.input` (ADR-0002).
+
+Two things the build emits are not tokens in v0.1: the page gradient and the focus ring. They live in `scripts/lib/spec.mjs` rather than inside the build script, because the contrast gate reads them there too — `contrast-pairs.json` measures the ring by role, so changing its geometry moves what the gate measures instead of leaving the rows describing a ring that is no longer there.
 
 `dist/` is generated. Editing it by hand is undone by the next build and caught by the drift gate.
 
@@ -113,7 +115,7 @@ Versioning follows ADR-0004 and DESIGN_HANDOFF F5: renaming or removing a token 
 - **Light only.** The dark mode ADR-0004 and DESIGN_HANDOFF A4 call for was not part of this delivery. Every semantic token has one value. The hub is dark today and cannot adopt the semantic tier until the dark set lands; it can adopt the primitive tier and the preset now.
 - **No component tier.** The `component` group is reserved by the grammar checker and is empty. The first component token (`button.primary.fill.hover`) arrives with the console's `src/ui/` primitives.
 - **No z-index ladder, no breakpoints.** DESIGN_HANDOFF A12 and A13 are owed. The preset therefore overrides neither, and Tailwind's defaults apply.
-- **Four contrast pairs are exempt, and none fails.** The tertiary ink, the input border and the focus ring were fixed in the values rather than written down: `text.tertiary` is darker, `border.input` is slate.500, and the ring is two-tone with an opaque core. What remains in `contrast-known-failures.json` is four rulings — the two placeholders, the retired white-on-slate.300 disabled label, and the decorative card edge — each with the trigger that would reopen it. Nothing there is awaiting a decision.
+- **Four contrast pairs are exempt, and none fails.** The tertiary ink, the input border and the focus ring were fixed in the values rather than written down: `color.slate.600` and `color.slate.700` are darker — one step of the ramp does not move alone, so this darkens `text.tertiary` **and** `text.secondary` together — `border.input` is slate.500, and the ring is two-tone, an opaque core inside the delivered 35 % halo. What remains in `contrast-known-failures.json` is four rulings — the two placeholders, the retired white-on-slate.300 disabled label, and the decorative card edge — each with the trigger that would reopen it. Nothing there is awaiting a decision.
 
 ## Adding a token
 
