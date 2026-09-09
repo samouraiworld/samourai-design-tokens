@@ -37,6 +37,4 @@ Decisions 2 and 3 are usage changes, not value changes: `ink-4`, `ok`, `ink-3` a
 
 Source anchors in the hashed reference: buttons at lines 342, 1758 and 2636; room icon at 203 with selected background assigned at 3003; connected-room dot at 294. The ratios use unrounded WCAG luminance comparisons; a displayed rounded value does not turn a failure into a pass.
 
-Possible decisions, **not implemented or approved**: a shared hover fill `#4B64EC` gives the dark label 4.501974:1 and also clears the black label; changing light icon ink to `#7C8794` gives 3.016813:1; changing the light connected dot to `#309357` gives 3.000394:1. These are nearby RGB candidates with very little threshold margin, not a recommendation to target the minimum. Reusing existing `ink-3` for the selected-room icon gives 4.704526:1, and `ok-on-dark` for the connected dot gives 8.095806:1. A design owner must choose the intended visual result and adequate margin before any value or component usage changes.
-
 The unsupported running-text and sole-boundary capability measurements are reported separately. They are not new release requirements, not exemptions and not reasons to redesign decorative elements.
