@@ -5,8 +5,9 @@
 //   contrast  every declared pair clears its minimum or carries a reason
 //   drift     dist/ is exactly what tokens.json generates
 //   units     the token-resolution guard, CSS parity with the design drop, the
-//             colour maths the contrast gate rests on, the control rings, and
-//             the contrast gate's own self-test (each way it must fail, fails)
+//             colour maths the contrast gate rests on, the control rings, the
+//             contrast gate's own self-test (each way it must fail, fails),
+//             and the shell themes' own contract
 //
 // Every gate runs even when an earlier one fails, so one command tells you
 // everything that is wrong rather than one thing at a time.
@@ -31,6 +32,7 @@ const gates = [
       'test/color-math.selftest.mjs',
       'test/control-selection-ring.selftest.mjs',
       'test/check-contrast.selftest.mjs',
+      'test/theme-contract.selftest.mjs',
     ],
   ],
 ];

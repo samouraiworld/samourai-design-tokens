@@ -9,8 +9,8 @@
 // not exist emits NO CSS and NO error — for `border-*` the element falls back
 // to preflight's `border: 0 solid #e5e7eb`, a light grey line on our page.
 //
-// Not covered in v0.1, because tokens.json does not carry them yet: z-index,
-// breakpoints, and a dark mode. See docs/adr/0001 and the README.
+// The c-* colors follow the complete light/dark/black CSS theme boundary.
+// Legacy colors remain static. Breakpoints and z-index are not supplied.
 
 /** @type {{theme: {extend: Record<string, unknown>}}} */
 export default {
@@ -81,6 +81,54 @@ export default {
         "ink-placeholder": "#7C8894",
         action: "#2B4BDB",
         "action-hover": "#2340C4",
+        "c-page": "var(--c-page)",
+        "c-surface": "var(--c-surface)",
+        "c-sunken": "var(--c-sunken)",
+        "c-muted": "var(--c-muted)",
+        "c-muted-2": "var(--c-muted-2)",
+        "c-hairline": "var(--c-hairline)",
+        "c-border": "var(--c-border)",
+        "c-border-soft": "var(--c-border-soft)",
+        "c-border-strong": "var(--c-border-strong)",
+        "c-inverse": "var(--c-inverse)",
+        "c-inverse-2": "var(--c-inverse-2)",
+        "c-rail-line": "var(--c-rail-line)",
+        "c-ink": "var(--c-ink)",
+        "c-ink-2": "var(--c-ink-2)",
+        "c-ink-3": "var(--c-ink-3)",
+        "c-ink-4": "var(--c-ink-4)",
+        "c-on-inverse": "var(--c-on-inverse)",
+        "c-on-inverse-dim": "var(--c-on-inverse-dim)",
+        "c-action": "var(--c-action)",
+        "c-action-hover": "var(--c-action-hover)",
+        "c-accent-soft": "var(--c-accent-soft)",
+        "c-accent-ink": "var(--c-accent-ink)",
+        "c-ok-on-dark": "var(--c-ok-on-dark)",
+        "c-bad-on-dark": "var(--c-bad-on-dark)",
+        "c-ok": "var(--c-ok)",
+        "c-ok-soft": "var(--c-ok-soft)",
+        "c-ok-ink": "var(--c-ok-ink)",
+        "c-ok-border": "var(--c-ok-border)",
+        "c-warn": "var(--c-warn)",
+        "c-warn-soft": "var(--c-warn-soft)",
+        "c-warn-ink": "var(--c-warn-ink)",
+        "c-bad": "var(--c-bad)",
+        "c-bad-soft": "var(--c-bad-soft)",
+        "c-bad-ink": "var(--c-bad-ink)",
+        "c-shadow-1": "var(--c-shadow-1)",
+        "c-shadow-2": "var(--c-shadow-2)",
+        "c-t1-bg": "var(--c-t1-bg)",
+        "c-t1-fg": "var(--c-t1-fg)",
+        "c-t2-bg": "var(--c-t2-bg)",
+        "c-t2-fg": "var(--c-t2-fg)",
+        "c-t3-bg": "var(--c-t3-bg)",
+        "c-t3-fg": "var(--c-t3-fg)",
+        "c-t4-bg": "var(--c-t4-bg)",
+        "c-t4-fg": "var(--c-t4-fg)",
+        "c-t5-bg": "var(--c-t5-bg)",
+        "c-t5-fg": "var(--c-t5-fg)",
+        "c-t6-bg": "var(--c-t6-bg)",
+        "c-t6-fg": "var(--c-t6-fg)",
       },
       spacing: {
         "1": "4px",
@@ -92,6 +140,13 @@ export default {
         "8": "32px",
         "10": "40px",
         "12": "48px",
+        "shell-rail-width": "var(--shell-rail-width)",
+        "shell-rail-item-width": "var(--shell-rail-item-width)",
+        "shell-sidebar-width": "var(--shell-sidebar-width)",
+        "shell-document-max-width": "var(--shell-document-max-width)",
+        "shell-document-min-width": "var(--shell-document-min-width)",
+        "shell-dock-width": "var(--shell-dock-width)",
+        "shell-dock-offset": "var(--shell-dock-offset)",
         "control-selection-ring-width": "5px",
       },
       fontFamily: {
@@ -139,6 +194,7 @@ export default {
       },
       backgroundImage: {
         frost: "linear-gradient(115deg, #DCE6F0 0%, #EEF3F8 45%, #FFFFFF 100%)",
+        "c-page-gradient": "var(--c-page-grad)",
       },
       ringColor: {
         DEFAULT: "#2B4BDB",

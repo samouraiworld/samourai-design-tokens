@@ -26,7 +26,7 @@
       "ratio": 1.52,
       "min": 4.5,
       "reason": "Exempt, and the pairing is retired: the disabled primary button keeps its slate.300 fill and its label changes from action.onPrimary to text.tertiary. White on slate.300 is 1.52:1, which is invisible rather than dimmed; tertiary ink on slate.300 is 3.87:1, legible while unmistakably inactive. WCAG 1.4.3 exempts disabled controls, so 4.5:1 was never the bar — being readable was.",
-      "decision": "Decided, not pending. It is not a token change because the disabled button's label colour is a component rule and v0.1 has no component tier: the grammar reserves `component` and it is empty (README, What v0.1 is not). The rule belongs in the COMPONENTS.md Button table, and the pairing becomes a token and a pair of its own when button.primary.disabled.label lands. This row stays measured so the white label cannot come back unnoticed."
+      "decision": "Decided, not pending. It is not a token change because the disabled button's label colour is a component rule and v0.1 has no component tier: the grammar reserves `component` and v0.1 carries nothing in it but the shell geometry aliases — no component colour token exists (README, What v0.1 is not). The rule belongs in the COMPONENTS.md Button table, and the pairing becomes a token and a pair of its own when button.primary.disabled.label lands. This row stays measured so the white label cannot come back unnoticed."
     },
     {
       "id": "border.default/surface.default",

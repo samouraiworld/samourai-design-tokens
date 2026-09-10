@@ -16,7 +16,7 @@
 
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { ROOT, loadTokens, walkTokens, indexTokens, resolve, resolveValue, parseColor } from './lib/tokens.mjs';
+import { ROOT, loadTokens, walkTokens, indexTokens, resolve, resolveValue, parseColor, aliasTarget } from './lib/tokens.mjs';
 import { SPEC, focusRingLayers, focusRingIndicator } from './lib/spec.mjs';
 
 const DIST = join(ROOT, 'dist');
@@ -27,18 +27,34 @@ const tokens = walkTokens(tree);
 const index = indexTokens(tree);
 const byPath = new Map(tokens.map((t) => [t.path, t]));
 
+const THEMES = ['light', 'dark', 'black'];
+const themeGroups = tree.semantic?.theme;
+if (!themeGroups || Object.keys(themeGroups).join(',') !== THEMES.join(',')) {
+  throw new Error('expected complete theme set: light, dark, black');
+}
+const themeRoles = Object.keys(themeGroups.light);
+if (!themeRoles.length) throw new Error('light: incomplete theme role set');
+for (const name of THEMES) {
+  if (Object.keys(themeGroups[name]).join(',') !== themeRoles.join(',')) {
+    throw new Error(`${name}: incomplete theme role set`);
+  }
+}
+
 const flat = (path) => {
   if (!byPath.has(path)) throw new Error(`build expects the token "${path}" and tokens.json does not define it`);
   return resolve(path, index);
 };
 
 // --- Spec constants ---------------------------------------------------------
-// The page gradient and the focus ring are fixed by the design system and are
-// not tokens in v0.1. They live in scripts/lib/spec.mjs because the contrast
-// gate reads them too: a geometry only the build knows is a geometry no check
-// can measure. Each is anchored to a token it derives from, so a palette change
-// flows through and a token rename fails the build rather than the browser.
-// ADR-0002.
+// The frost page gradient and the focus ring are fixed by the design system and
+// are not tokens. The themed page gradients are: `semantic.theme.*.page-grad`
+// and the `color.theme-*.page-grad` primitives behind them reach dist/ through
+// the `case 'gradient'` branch below, like any other value. Only the frost
+// gradient that `--bg-page` carries is composed from the constants here. Both
+// constants live in scripts/lib/spec.mjs because the contrast gate reads them
+// too: a geometry only the build knows is a geometry no check can measure. Each
+// is anchored to a token it derives from, so a palette change flows through and
+// a token rename fails the build rather than the browser. ADR-0002.
 
 // --- Path → CSS custom property --------------------------------------------
 const kebab = (s) => s.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
@@ -69,6 +85,7 @@ const CSS_PREFIX = {
 
 function cssName(path) {
   if (CSS_ALIASES[path]) return CSS_ALIASES[path];
+  if (path.startsWith('semantic.theme.')) return `c-${path.split('.').slice(3).join('-')}`;
   return mechanicalName(path);
 }
 
@@ -77,6 +94,7 @@ function mechanicalName(path) {
   const seg = path.split('.');
 
   if (seg[0] === 'color') return seg.slice(1).map(kebab).join('-');
+  if (seg[0] === 'component') return seg.slice(1).map(kebab).join('-');
 
   if (seg[0] === 'semantic') {
     const rest = seg.slice(1).map(kebab);
@@ -112,6 +130,25 @@ function cssValue(token) {
     case 'shadow': {
       const { offsetX, offsetY, blur, spread, color } = value;
       return `${offsetX} ${offsetY} ${blur} ${spread} ${color}`;
+    }
+    case 'gradient': {
+      // Stop lists use the package's existing hex-color token dialect.
+      // Direction is CSS-specific metadata on the primitive, not a stop.
+      let source = token;
+      while (aliasTarget(source.value)) source = index.get(aliasTarget(source.value));
+      const angle = source.node.$extensions?.['app.samourai.css-gradient']?.angle;
+      if (typeof angle !== 'string' || !/^-?\d+(?:\.\d+)?deg$/.test(angle)) {
+        throw new Error(`${token.path}: missing or invalid gradient angle metadata`);
+      }
+      if (!Array.isArray(value) || value.length < 2) throw new Error(`${token.path}: invalid gradient stop list`);
+      const stops = value.map((stop) => {
+        if (!stop || !Number.isFinite(stop.position) || stop.position < 0 || stop.position > 1) {
+          throw new Error(`${token.path}: invalid gradient stop position`);
+        }
+        parseColor(stop.color);
+        return `${stop.color} ${stop.position * 100}%`;
+      });
+      return `linear-gradient(${angle},${stops.join(',')})`;
     }
     default:
       return String(value);
@@ -171,13 +208,20 @@ function buildCss() {
     ['radius', pick('radius').map(declare)],
     ['elevation', pick('shadow').map(declare)],
     ['motion', pick('motion').map(declare)],
+    ['shell geometry', [...pick('semantic.layout'), ...pick('component.shell')].map(declare)],
   ];
 
   const body = sections
     .map(([title, lines]) => `  /* ${title} */\n${lines.join('\n')}`)
     .join('\n\n');
 
-  return `${HEADER}\n:root {\n${body}\n}\n`;
+  const themes = THEMES.map((name) => {
+    const selector = name === 'light' ? ':root, [data-theme="light"]' : `[data-theme="${name}"]`;
+    const values = themeRoles.map((role) => `  --c-${role}: ${cssValue(byPath.get(`semantic.theme.${name}.${role}`))};`);
+    return `${selector} {\n${values.join('\n')}\n}`;
+  }).join('\n\n');
+
+  return `${HEADER}\n:root {\n${body}\n}\n\n/* Complete shell themes; legacy variables above retain their values. */\n${themes}\n`;
 }
 
 // --- dist/tailwind.preset.js ------------------------------------------------
@@ -240,10 +284,24 @@ function buildPreset() {
   const colors = {};
   for (const [key, child] of Object.entries(tree.color)) {
     if (key.startsWith('$')) continue;
+    // Theme primitives are implementation values; consumers use scoped c-*.
+    if (THEMES.some((name) => key === `theme-${name}`)) continue;
     colors[key] = '$value' in child ? flat(`color.${key}`) : scaleObject(`color.${key}`);
   }
-  for (const t of pick('semantic').filter((t) => t.type === 'color')) colors[mechanicalName(t.path)] = flat(t.path);
+  // Both filters, and both are load-bearing. `type === 'color'` keeps the
+  // non-colour semantics out of the colour map — the selected-control ring
+  // width is a dimension and belongs to ringWidth below. The theme and layout
+  // groups are excluded on top of that: their colours are real colours, but
+  // they are scoped per theme and reach consumers as the `c-*` entries added
+  // after this loop, never as one flat value that would freeze the light theme.
+  const flatSemantic = pick('semantic').filter(
+    (t) => t.type === 'color' && !t.path.startsWith('semantic.theme.') && !t.path.startsWith('semantic.layout.'),
+  );
+  for (const t of flatSemantic) colors[mechanicalName(t.path)] = flat(t.path);
   for (const [nick, path] of Object.entries(PRESET_NICKNAMES)) colors[nick] = flat(path);
+  for (const role of themeRoles) {
+    if (byPath.get(`semantic.theme.light.${role}`).type === 'color') colors[`c-${role}`] = `var(--c-${role})`;
+  }
 
   const shadows = Object.fromEntries(
     pick('shadow').map((t) => [t.path.slice('shadow.'.length), cssValue(t)]),
@@ -255,7 +313,10 @@ function buildPreset() {
 
   const theme = {
     colors,
-    spacing: scaleObject('space'),
+    spacing: {
+      ...scaleObject('space'),
+      ...Object.fromEntries(pick('component.shell').map((t) => [mechanicalName(t.path), `var(--${cssName(t.path)})`])),
+    },
     fontFamily: scaleObject('font.family'),
     fontSize: withDefaults('fontSize', scaleObject('font.size')),
     fontWeight: Object.fromEntries(
@@ -267,7 +328,7 @@ function buildPreset() {
     letterSpacing: scaleObject('font.tracking'),
     borderRadius: withDefaults('borderRadius', scaleObject('radius')),
     boxShadow: shadows,
-    backgroundImage: { frost: gradient },
+    backgroundImage: { frost: gradient, 'c-page-gradient': 'var(--c-page-grad)' },
     // Tailwind's ring utility is single-tone, so it carries the indicator —
     // the tone SC 1.4.11 measures. The full two-tone ring is on --focus-ring.
     // `control-selection` is the selected-control ring, a different indicator
@@ -295,8 +356,8 @@ function buildPreset() {
 // not exist emits NO CSS and NO error — for \`border-*\` the element falls back
 // to preflight's \`border: 0 solid #e5e7eb\`, a light grey line on our page.
 //
-// Not covered in v0.1, because tokens.json does not carry them yet: z-index,
-// breakpoints, and a dark mode. See docs/adr/0001 and the README.
+// The c-* colors follow the complete light/dark/black CSS theme boundary.
+// Legacy colors remain static. Breakpoints and z-index are not supplied.
 
 /** @type {{theme: {extend: Record<string, unknown>}}} */
 export default {
@@ -309,11 +370,11 @@ export default {
 
 // --- dist/tokens.d.ts -------------------------------------------------------
 function buildTypes() {
-  const vars = [
+  const vars = [...new Set([
     '--bg-page',
     '--focus-ring',
     ...tokens.map((t) => `--${cssName(t.path)}`),
-  ].sort();
+  ])].sort();
   const paths = tokens.map((t) => t.path).sort();
 
   return `// GENERATED FILE — DO NOT EDIT.
