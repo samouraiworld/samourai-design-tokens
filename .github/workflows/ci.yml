@@ -27,9 +27,20 @@ jobs:
       # purpose (see docs/adr/0001), so there is no lockfile to hash and
       # nothing to install; asking setup-node to cache without a lockfile
       # FAILS the job outright.
+      #
+      # `cache:` is not the only way in. setup-node caches automatically,
+      # with no `cache:` written anywhere, whenever package.json declares a
+      # package manager -- the top-level `packageManager` field, or (since
+      # v6) `devEngines.packageManager`. This package.json declares neither,
+      # so the paragraph above was enforced by an absence rather than by a
+      # setting: the day someone adds a `packageManager` field, the caching
+      # it warns about switches itself on and the job starts failing for a
+      # reason nothing in this file mentions. `package-manager-cache: false`
+      # is that guard written down, and it holds whatever package.json grows.
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: .nvmrc
+          package-manager-cache: false
 
       # The four gates, in one command, all of them run even after one fails.
       # `npm run build` is deliberately NOT run here: the drift gate asserts
