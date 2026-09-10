@@ -17,6 +17,25 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # First, and with no setup-node above it: the cheapest gate here, and the one
+  # whose failure says nothing about the tokens under review.
+  dot-entries:
+    name: Tracked dot-entries
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # A gate nobody has watched refuse a bad input is a comment rather than a
+      # gate. The self-test runs first and asserts each refusal MESSAGE, not its
+      # exit code -- the order the two `ci-ok` scripts already use.
+      - name: Prove the dot-entry check can fail
+        run: .github/scripts/check-tracked-dot-entries.selftest.sh
+      # Development tooling keeps local configuration in a dot-directory at the
+      # repository root, and one `git add .` commits it -- here, into a public
+      # repository. `.git/info/exclude` protects only the clone it was typed in;
+      # this check travels with the repository, so it protects every clone.
+      - name: Every tracked dot-entry is on the allowlist
+        run: .github/scripts/check-tracked-dot-entries.sh
+
   gates:
     name: Grammar, contrast, drift, units
     runs-on: ubuntu-latest
@@ -193,7 +212,7 @@ jobs:
           tar -xzf /tmp/actionlint.tar.gz -C /tmp actionlint
           /tmp/actionlint -color
 
-  # The single check branch protection points at. Requiring the three jobs above
+  # The single check branch protection points at. Requiring the four jobs above
   # by name instead would put the gate list in repository settings, where it
   # rots out of sync with this file: renaming a job leaves the old context
   # required forever — blocking every PR on a check nothing will ever report —
@@ -229,6 +248,7 @@ jobs:
     runs-on: ubuntu-latest
     if: always()
     needs: [attribution, gates, secret-scan, workflows]
+    needs: [dot-entries, gates, secret-scan, workflows]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Prove this gate can fail
