@@ -63,6 +63,7 @@ export type TokenPath =
   | 'semantic.border.hairline'
   | 'semantic.border.input'
   | 'semantic.border.soft'
+  | 'semantic.control.selection-ring-width'
   | 'semantic.surface.accent'
   | 'semantic.surface.default'
   | 'semantic.surface.inverse'
@@ -87,7 +88,8 @@ export type TokenPath =
   | 'space.4'
   | 'space.5'
   | 'space.6'
-  | 'space.8';
+  | 'space.8'
+  | 'space.control-selection-ring-width';
 
 /** Every custom property declared by dist/tokens.css. */
 export type TokenCssVariable =
@@ -107,6 +109,7 @@ export type TokenCssVariable =
   | '--cobalt-100'
   | '--cobalt-500'
   | '--cobalt-600'
+  | '--control-selection-ring-width'
   | '--dur-base'
   | '--dur-fast'
   | '--dur-slow'
@@ -150,6 +153,7 @@ export type TokenCssVariable =
   | '--sp-5'
   | '--sp-6'
   | '--sp-8'
+  | '--sp-control-selection-ring-width'
   | '--surface'
   | '--surface-accent'
   | '--surface-inverse'
