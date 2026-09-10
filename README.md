@@ -44,11 +44,11 @@ A fourth gate is local to this repository: **drift**, which asserts `dist/` is b
 
 ## How CI is wired
 
-Four jobs, in `.github/workflows/ci.yml`. Three do work: **Grammar, contrast, drift, units** runs `npm test`, **Secret scan** runs gitleaks over the whole history, **Workflow lint** runs actionlint over these workflows. The fourth, **`ci-ok`**, does no work of its own — it needs the other three and fails unless every one of them concluded `success` or a deliberate `skipped`. The gitleaks and actionlint archives are verified by SHA-256 before extraction, against the `GITLEAKS_SHA256` / `ACTIONLINT_SHA256` env values recorded next to each pinned version in the workflow.
+Four jobs, in `.github/workflows/ci.yml`. Three do work: **Grammar, contrast, drift, units** runs `npm test`, **Secret scan** runs gitleaks over the whole history, **Workflow lint** runs actionlint over these workflows. The gitleaks and actionlint archives are verified by SHA-256 before extraction, against the `GITLEAKS_SHA256` / `ACTIONLINT_SHA256` env values recorded next to each pinned version in the workflow. The fourth, **`ci-ok`**, does no work of its own — it needs the other three, and every one of them must have concluded `success`. A job that concluded `skipped` fails it too, unless that job is named in the `SKIP_OK` environment variable on the step; **this repository declares none**, because no job here is conditional, so nothing may skip. That is the whole point of the rule: a skipped required check is reported to branch protection as satisfied, so adding an `if:` or a path filter to a gate would otherwise turn the merge button green precisely because the gate never ran.
 
 `ci-ok` is the single check branch protection points at. Requiring the three working jobs by name instead would keep the gate list in repository settings, where it drifts out of step with the workflow: a renamed job leaves the old context required forever, blocking every PR on a check nothing will ever report, while the job that replaced it is required by nothing. Adding, renaming or splitting a gate is therefore a change to `ci.yml` alone.
 
-It runs `.github/scripts/aggregate-result.selftest.sh` before it decides anything. A required check nobody has ever seen fail is a decoration, and this one is the last thing standing between a red gate and a green merge button.
+Before it decides anything, `ci-ok` proves both of its scripts can still fail — `aggregate-result.selftest.sh` and `check-aggregate-covers-jobs.selftest.sh` — and then runs both: `check-aggregate-covers-jobs.py`, which fails if a job exists in `ci.yml` but is missing from `ci-ok`'s `needs:` (such a gate could go red while the required check stayed green), and `aggregate-result.py`, which reads the verdicts. A required check nobody has ever seen fail is a decoration, and this one is the last thing standing between a red gate and a green merge button.
 
 ## Releasing
 
@@ -108,7 +108,9 @@ Versioning follows ADR-0004 and DESIGN_HANDOFF F5: renaming or removing a token 
 
 ## The source of truth is the design workstream's values
 
-`tokens.json` is carried **verbatim** from the design drop, byte for byte. This repository generates from it and measures it; it does not edit it. A change to a token value is a design decision and arrives as a PR here, with the contrast gate green or an allowlist entry carrying a reason. It is never a build fix.
+`tokens.json` is the design workstream's delivery. This repository generates from it and measures it; it does not **decide** it. A change to a token value is a design decision and arrives as a PR here carrying three things — the decision, the ratio it now measures in the token's `$description`, and the contrast gate green — or an allowlist entry naming the decision it is still waiting on. It is never a build fix. Three primitives have moved that way, in one signed pass: `color.slate.600`, `color.slate.700` and `semantic.border.input` (ADR-0002).
+
+Two things the build emits are not tokens in v0.1: the page gradient and the focus ring. They live in `scripts/lib/spec.mjs` rather than inside the build script, because the contrast gate reads them there too — `contrast-pairs.json` measures the ring by role, so changing its geometry moves what the gate measures instead of leaving the rows describing a ring that is no longer there.
 
 `dist/` is generated. Editing it by hand is undone by the next build and caught by the drift gate.
 
@@ -117,7 +119,7 @@ Versioning follows ADR-0004 and DESIGN_HANDOFF F5: renaming or removing a token 
 - **Light only.** The dark mode ADR-0004 and DESIGN_HANDOFF A4 call for was not part of this delivery. Every semantic token has one value. The hub is dark today and cannot adopt the semantic tier until the dark set lands; it can adopt the primitive tier and the preset now.
 - **No component tier.** The `component` group is reserved by the grammar checker and is empty. The first component token (`button.primary.fill.hover`) arrives with the console's `src/ui/` primitives.
 - **No z-index ladder, no breakpoints.** DESIGN_HANDOFF A12 and A13 are owed. The preset therefore overrides neither, and Tailwind's defaults apply.
-- **Nine contrast pairs fail and two are exempt**, all recorded in `contrast-known-failures.json` with the decision each one is waiting on. The gate is green because the failures are written down, not because they are fixed. The tertiary ink and the focus ring are the two that matter: a 1.78:1 focus indicator is the only thing a keyboard user has to locate themselves with.
+- **Four contrast pairs are exempt, and none fails.** The tertiary ink, the input border and the focus ring were fixed in the values rather than written down: `color.slate.600` and `color.slate.700` are darker — one step of the ramp does not move alone, so this darkens `text.tertiary` **and** `text.secondary` together — `border.input` is slate.500, and the ring is two-tone, an opaque core inside the delivered 35 % halo. What remains in `contrast-known-failures.json` is four rulings — the two placeholders, the retired white-on-slate.300 disabled label, and the decorative card edge — each with the trigger that would reopen it. Nothing there is awaiting a decision.
 
 ## Adding a token
 
