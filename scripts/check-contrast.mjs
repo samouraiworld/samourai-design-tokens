@@ -24,16 +24,30 @@
 //   An excuse outlives the pair it was written for.  Each allowlist entry is
 //     bound to the pair's `fg`, `bg` and `min`, and to the ratio it was written
 //     at. A pair re-pointed at other tokens or at another `spec:` role, a
-//     loosened minimum, or a colour that moved since the ruling fails the gate
-//     instead of quietly inheriting the old reason. That is the same rule as
-//     the line above, applied while the pair is still failing: an entry stops
-//     covering a pair the moment the pair stops being the one it describes, and
-//     an entry whose pair clears its minimum is deleted rather than re-measured.
-//     A minimum loosened far enough for the pair to clear it lands there too,
-//     reported as an entry to delete rather than as a loosened bound; the split
-//     is at the minimum, so only one of the two ever fires on a row.
-//     test/check-contrast.selftest.mjs proves each of those failures still
-//     fires, on a row addressed by a token path and on one addressed by a role.
+//     loosened minimum, or a colour that moved in either direction since the
+//     ruling fails the gate instead of quietly inheriting the old reason. That
+//     is the same rule as the line above, applied while the pair is still
+//     failing: an entry stops covering a pair the moment the pair stops being
+//     the one it describes, and an entry whose pair clears its minimum is
+//     deleted rather than re-measured. A minimum loosened far enough for the
+//     pair to clear it lands there too, reported as an entry to delete rather
+//     than as a loosened bound; the split is at the minimum, so only one of the
+//     two ever fires on a row.
+//     test/check-contrast.selftest.mjs mutates one of them per test and asserts
+//     the note the gate prints, not the exit code. On a row addressed by a
+//     token path it covers every one: the `fg` binding, the `bg` binding, a
+//     loosened minimum, drift in either direction, a missing `reason`, a
+//     missing `decision`, and both routes to a pair that clears — a colour that
+//     improved, and a minimum loosened far enough. Those last two run on an
+//     exempt row, the half of that branch under which a stale entry looks
+//     harmless; `exempt` picks the verdict label there and nothing else. On a
+//     row addressed by a `spec:` role it covers the seam the roles opened: the
+//     `fg` binding, against the literal the role paints and against another
+//     role, and drift in either direction. The `bg` binding, the minimum and
+//     the missing `reason` and `decision` are not repeated there — each
+//     compares two fields of the row without reading the composed colour, so a
+//     role-addressed copy would re-run the token-path test over the same lines
+//     of the gate.
 
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';

@@ -13,9 +13,17 @@ import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:f
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
+import { SPEC_COLORS } from '../scripts/lib/spec.mjs';
+import { composite, indexTokens, loadTokens, luminance, parseColor, resolve, toHex } from '../scripts/lib/tokens.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const INPUTS = ['tokens.json', 'contrast-pairs.json', 'contrast-known-failures.json'];
+
+/** A literal as a RegExp fragment. Every occurrence, not just the first one. */
+const rx = (s) => s.replace(/[.*+?^${}()|[\]\\/-]/g, '\\$&');
+
+/** The report line for `id`, measuring `ratio` — the gate's own printed number. */
+const measures = (id, ratio) => new RegExp(`^${rx(id)}\\s+\\S+\\s+\\S+\\s+${rx(ratio.toFixed(2))}\\s`, 'm');
 
 /** A throwaway copy of the gate and everything it reads; nothing else. */
 function scratch() {
@@ -33,15 +41,28 @@ function runGate(dir) {
 const readJson = (dir, file) => JSON.parse(readFileSync(join(dir, file), 'utf8'));
 const writeJson = (dir, file, data) => writeFileSync(join(dir, file), JSON.stringify(data, null, 2));
 
-/** Break one thing with `mutate`, run the gate, assert it fails and says why. */
-function assertFailsFor(name, mutate, expectedNote) {
+/**
+ * Break one thing with `mutate`, run the gate, assert it fails and says why.
+ *
+ * `expected` is one pattern or several, all of which must appear. `absent` is
+ * the same for a note the gate must NOT print: the verdict it would reach if it
+ * read the mutation as some other kind of problem. A test that only asserts the
+ * note it wants cannot tell "the gate said this" from "the gate said this among
+ * other things".
+ */
+function assertFailsFor(name, mutate, expected, absent = []) {
   test(name, () => {
     const dir = scratch();
     try {
       mutate(dir);
       const { status, output } = runGate(dir);
       assert.equal(status, 1, `the gate exited ${status} instead of failing:\n${output}`);
-      assert.match(output, expectedNote, `the gate failed, but not for the reason under test:\n${output}`);
+      for (const pattern of [expected].flat()) {
+        assert.match(output, pattern, `the gate failed, but not for the reason under test:\n${output}`);
+      }
+      for (const pattern of [absent].flat()) {
+        assert.doesNotMatch(output, pattern, `the gate also failed for a reason this mutation must not reach:\n${output}`);
+      }
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
@@ -86,7 +107,7 @@ test('an untouched copy of the gate and its inputs passes', () => {
 //
 // That is a limit of these seven mutations, not of the gate. The other half of
 // the binding — a row addressed by a `spec:` role, which is the half that only
-// exists at all since the roles landed — is mutated at the end of this file,
+// exists at all since the roles landed — is mutated further down this file,
 // against a subject built for it.
 const TOKEN_PATH_SUBJECT = () => {
   const entry = readJson(ROOT, 'contrast-known-failures.json').failures[0];
@@ -198,34 +219,58 @@ assertFailsFor(
 // same bar as the untouched tree, so each mutation after it is still the only
 // thing wrong when the gate goes red.
 const ROLE_SUBJECT = 'focus-ring/surface.default';
+const ROLE_SUBJECT_FG = 'spec:focus-ring.indicator';
+const ROLE_SUBJECT_BG = 'semantic.surface.default';
+// The scratch ruling's two numbers: what the indicator measures on white today,
+// and a minimum it does not clear. Written out rather than derived, because the
+// baseline test below holds them to what the gate measures — a ring that moves
+// makes that test red, which is this file being re-stated rather than drifting.
+const ROLE_SUBJECT_RATIO = 6.7;
+const ROLE_SUBJECT_MIN = 7.0;
 
 /**
  * Make the role-addressed ring row a failing, excused row inside `dir`: the
  * indicator measures 6.70:1 on white, so a minimum of 7 puts it below the bar
- * without touching a single colour. What the three mutations below then break
+ * without touching a single colour. What the four mutations below then break
  * is the binding, not the measurement.
  */
 function excuseRoleAddressedRow(dir) {
   const pair = readJson(dir, 'contrast-pairs.json').pairs.find((p) => p.id === ROLE_SUBJECT);
   assert.equal(
     pair?.fg,
-    'spec:focus-ring.indicator',
+    ROLE_SUBJECT_FG,
     `${ROLE_SUBJECT} must still be addressed by a spec: role for these tests to mean anything`,
   );
+  assert.equal(pair?.bg, ROLE_SUBJECT_BG, `${ROLE_SUBJECT} must still be measured against ${ROLE_SUBJECT_BG}`);
   editPairs(dir, (pairs) => {
-    pairs.find((p) => p.id === ROLE_SUBJECT).min = 7.0;
+    pairs.find((p) => p.id === ROLE_SUBJECT).min = ROLE_SUBJECT_MIN;
   });
   editAllowlist(dir, (failures) => {
     failures.push({
       id: ROLE_SUBJECT,
-      fg: 'spec:focus-ring.indicator',
-      bg: 'semantic.surface.default',
-      ratio: 6.7,
-      min: 7.0,
+      fg: ROLE_SUBJECT_FG,
+      bg: ROLE_SUBJECT_BG,
+      ratio: ROLE_SUBJECT_RATIO,
+      min: ROLE_SUBJECT_MIN,
       reason: 'Scratch-only: the ring held to a minimum this copy invents for it.',
       decision: 'Scratch-only, and deleted with the scratch directory.',
     });
   });
+}
+
+/**
+ * The colour `ROLE_SUBJECT_FG` composes to on `ROLE_SUBJECT_BG`, read through
+ * the same role map the gate reads and composited the same way.
+ *
+ * Derived rather than typed. A hex typed here stops describing the role the
+ * moment the palette moves, and the mutation below would then be re-pointing
+ * the row at a colour the ring no longer paints while its own comment still
+ * said the colour had not moved — a test passing on a premise that is false.
+ */
+function indicatorHex() {
+  const index = indexTokens(loadTokens());
+  const bg = parseColor(resolve(ROLE_SUBJECT_BG, index));
+  return toHex(composite(SPEC_COLORS[ROLE_SUBJECT_FG](index), bg));
 }
 
 test('the role-addressed subject is green before anything is broken', () => {
@@ -234,7 +279,9 @@ test('the role-addressed subject is green before anything is broken', () => {
     excuseRoleAddressedRow(dir);
     const { status, output } = runGate(dir);
     assert.equal(status, 0, `the subject itself fails the gate, so the mutations below prove nothing:\n${output}`);
-    assert.match(output, new RegExp(`${ROLE_SUBJECT.replace('/', '\\/').replace('.', '\\.')}.*ALLOWED`));
+    assert.match(output, new RegExp(`${rx(ROLE_SUBJECT)}.*ALLOWED`));
+    // Not just green: green measuring what the scratch ruling says it measures.
+    assert.match(output, measures(ROLE_SUBJECT, ROLE_SUBJECT_RATIO));
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
@@ -244,16 +291,27 @@ assertFailsFor(
   'a role-addressed pair re-pointed at the literal that role paints today loses its excuse',
   (dir) => {
     excuseRoleAddressedRow(dir);
-    // The colour does not move: #2B4BDB is what spec:focus-ring.indicator
-    // composes to today, so the row still measures 6.70 and the ratio has
+    // The colour does not move: the literal is read out of the role itself, so
+    // the row still measures ROLE_SUBJECT_RATIO and the two ratio arms have
     // nothing to report. What changed is that the row no longer reads
     // scripts/lib/spec.mjs — a geometry change would leave it behind, which is
     // the lie the roles exist to stop — and only the `fg` binding can say so.
+    //
+    // That premise is asserted rather than stated: the second pattern below is
+    // the gate's own measurement of the re-pointed row, so a palette that moved
+    // out from under this test turns it red instead of letting it isolate the
+    // `fg` binding by accident, with the colour moving alongside the reference.
     editPairs(dir, (pairs) => {
-      pairs.find((p) => p.id === ROLE_SUBJECT).fg = '#2B4BDB';
+      pairs.find((p) => p.id === ROLE_SUBJECT).fg = indicatorHex();
     });
   },
-  /written for fg "spec:focus-ring\.indicator" but the pair now measures fg "#2B4BDB" — a different pair, not the one excused/,
+  [
+    new RegExp(
+      `written for fg "${rx(ROLE_SUBJECT_FG)}" but the pair now measures fg "${rx(indicatorHex())}" ` +
+        '— a different pair, not the one excused',
+    ),
+    measures(ROLE_SUBJECT, ROLE_SUBJECT_RATIO),
+  ],
 );
 
 assertFailsFor(
@@ -283,4 +341,84 @@ assertFailsFor(
     writeJson(dir, 'tokens.json', tokens);
   },
   /measures 4\.92, worse than the 6\.70 the entry was written for/,
+);
+
+assertFailsFor(
+  'a recorded ratio the composed colour has outgrown fails on a role-addressed row too',
+  (dir) => {
+    excuseRoleAddressedRow(dir);
+    // The mirror of the token-path mutation of the same shape, on the half
+    // where the colour is composed rather than resolved. Nothing moves but the
+    // number the ruling records, and it moves the way that leaves the row still
+    // failing: the measurement is now ABOVE the recorded ratio, which is the
+    // arm that reads as harmless — the pair got better — and is the arm a gate
+    // relaxed "because a composed colour cannot be held to a number" drops.
+    editAllowlist(dir, (failures) => {
+      failures.find((f) => f.id === ROLE_SUBJECT).ratio -= 1;
+    });
+  },
+  new RegExp(
+    `measures ${rx(ROLE_SUBJECT_RATIO.toFixed(2))}, not the ${rx((ROLE_SUBJECT_RATIO - 1).toFixed(2))} ` +
+      'the entry was written for — the colour moved; re-read the ruling',
+  ),
+);
+
+// --- A pair that has come to clear its minimum ------------------------------
+//
+// The `clears` branch of scripts/check-contrast.mjs is the one that refuses an
+// entry without reading a single one of its fields: the pair passes, so there
+// is nothing left to excuse and the entry is deleted rather than re-measured.
+// Both routes into it are mutated below, because the second is an ordering
+// claim as much as a verdict — a loosened minimum arrives here before the `min`
+// binding can report it as a loosened bound, and the two notes contradict each
+// other about the same row.
+//
+// The subject is an exempt row on purpose. Exempt is the half that reads as
+// "excused anyway, so the entry does no harm", which is what an entry left
+// standing under a row that passes always looks like from the inside.
+const EXEMPT_SUBJECT = () => {
+  const { pairs } = readJson(ROOT, 'contrast-pairs.json');
+  const entry = readJson(ROOT, 'contrast-known-failures.json').failures.find(
+    (f) => pairs.find((p) => p.id === f.id)?.exempt,
+  );
+  assert.ok(entry, 'these mutations need an allowlisted row that contrast-pairs.json marks exempt');
+  return entry.id;
+};
+
+assertFailsFor(
+  'an entry whose pair has started passing is deleted, not re-measured',
+  (dir) => {
+    const { pair } = excusedPair(dir, EXEMPT_SUBJECT());
+    // Take the pair's foreground to the far end of the scale from its own
+    // background, so the row clears by a distance no rounding argument reaches.
+    // The literal lands on the pair's own token rather than on the ramp step it
+    // aliases, for the same reason as the mutations above. Two rows report it
+    // when the subject is a placeholder row — the ink is excused on both of the
+    // surfaces it is measured against — and both report the same one thing.
+    const tokens = readJson(dir, 'tokens.json');
+    const bg = parseColor(resolve(pair.bg, indexTokens(tokens)));
+    let node = tokens;
+    for (const key of pair.fg.split('.')) node = node[key];
+    node.$value = luminance(bg) > 0.18 ? '#000000' : '#FFFFFF';
+    writeJson(dir, 'tokens.json', tokens);
+  },
+  /listed in contrast-known-failures\.json but the pair passes now — delete the entry/,
+);
+
+assertFailsFor(
+  'a minimum loosened far enough for the pair to clear is an entry to delete, not a loosened bound',
+  (dir) => {
+    const { pair } = excusedPair(dir, EXEMPT_SUBJECT());
+    editPairs(dir, (pairs) => {
+      // 1.0 is the floor of the ratio scale — identical colours — so the pair
+      // clears whatever it happens to measure, and the loosening is the only
+      // thing that put it there.
+      pairs.find((p) => p.id === pair.id).min = 1.0;
+    });
+  },
+  /listed in contrast-known-failures\.json but the pair passes now — delete the entry/,
+  // Not "written for min X, the pair now requires Y". That note is the binding
+  // check, and the binding check is never reached: the split is at the minimum,
+  // so a pair that clears is a deletion and never also a loosened bound.
+  /the pair now requires/,
 );
