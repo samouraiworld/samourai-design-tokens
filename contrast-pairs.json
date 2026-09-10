@@ -1,5 +1,5 @@
 {
-  "$comment": "The accessibility contract as data. The four load-bearing fields of a row — `fg`, `bg`, `label`, `min` — are the same four values samourai-visio/scripts/check-contrast.py carries in the `PAIRINGS` tuples it hardcodes; that script reads no JSON and this file is not an input to it. The shape is deliberate all the same, so a pairing can move from there to here without being reinterpreted. `fg` and `bg` are token paths from tokens.json, or a literal #hex. `min` is 4.5 for text (WCAG 2.1 SC 1.4.3) or 3.0 for a non-text boundary, control edge or focus indicator (SC 1.4.11); the large-text 3:1 exemption is not used anywhere in this system. A translucent foreground is composited over its background before it is measured, always: the alpha travels with the colour and no row can opt out, because a translucent colour measured as if it were opaque reports a ratio no user ever sees. `fg` may also be a `spec:` role rather than a token — `spec:focus-ring.indicator` is the ring tone painted against the control, `spec:focus-ring.outer` the tone painted onto the background — which resolves to a colour scripts/lib/spec.mjs composes for the build, at its real alpha. That is what keeps these rows measuring the focus ring that ships rather than a token named after it (ADR-0002). `exempt` records a row that is measured and reported but not gated. `expect: \"fail\"` inverts the row: it is a pair the design system forbids, and the gate fails if it ever starts passing, because that means the palette moved under the rule. Additional measurements classify decorative or unsupported capability combinations; they are explicitly outside normative contrast acceptance, carry a purpose, and are measured by the theme contract self-test. No allowlist entries are created for them.",
+  "$comment": "The accessibility contract as data. The four load-bearing fields of a row — `fg`, `bg`, `label`, `min` — are the same four values samourai-visio/scripts/check-contrast.py carries in the `PAIRINGS` tuples it hardcodes; that script reads no JSON and this file is not an input to it. The shape is deliberate all the same, so a pairing can move from there to here without being reinterpreted. `fg` and `bg` are token paths from tokens.json, or a literal #hex. `min` is 4.5 for text (WCAG 2.1 SC 1.4.3) or 3.0 for a non-text boundary, control edge or focus indicator (SC 1.4.11); the large-text 3:1 exemption is not used anywhere in this system. A translucent foreground is composited over its background before it is measured, always: the alpha travels with the colour and no row can opt out, because a translucent colour measured as if it were opaque reports a ratio no user ever sees. `fg` may also be a `spec:` role rather than a token — `spec:focus-ring.indicator` is the ring tone painted against the control, `spec:focus-ring.outer` the tone painted onto the background — which resolves to a colour scripts/lib/spec.mjs composes for the build, at its real alpha. That is what keeps these rows measuring the focus ring that ships rather than a token named after it (ADR-0002). `exempt` records a row that is measured and reported but not gated. `expect: \"fail\"` inverts the row: it is a pair the design system forbids, and the gate fails if it ever starts passing, because that means the palette moved under the rule. Additional measurements classify decorative or unsupported capability combinations, and figures this package can compute about a value it ships but does not gate; they are explicitly outside normative contrast acceptance, carry a purpose, and are measured by the theme contract self-test. A measurement may name a `spec:` role in `fg` exactly as a pair can, so a colour the build composes is reported at the geometry that actually ships and moves when that geometry moves. No allowlist entries are created for them, and a measurement never becomes a requirement, a waiver or a threshold.",
   "pairs": [
     {
       "id": "text.primary/surface.default",
@@ -2039,6 +2039,42 @@
       "kind": "capability",
       "purpose": "Pure white label capability. Actual buttons use theme-specific on-inverse; normative rows measure that value.",
       "thresholdForComparison": 4.5
+    },
+    {
+      "id": "theme.dark/focus-ring-indicator/surface",
+      "fg": "spec:focus-ring.indicator",
+      "bg": "semantic.theme.dark.surface",
+      "label": "dark: shipped focus-ring indicator core on surface; the ring is not themed",
+      "kind": "capability",
+      "purpose": "The focus indicator this package ships, composed against a themed ground introduced here. The ring does not follow [data-theme]: --focus-ring is declared once on :root and redeclared in no theme block, and the preset's ringColor.DEFAULT carries the same single value, so there is no themed alternative to reach for. It measures below the 3:1 SC 1.4.11 asks of a focus indicator and that the gate enforces on the two light surfaces it does cover (focus-ring/surface.default 6.70:1, focus-ring/surface.page 6.01:1). Reported, not enforced: no waiver was added, no row was exempted and no threshold moved. Whether the ring gains a themed variant, or the shortfall is accepted with a stated reason, is owner decision B-themed-ring, open under ADR-0002; this row exists so the number is computed rather than absent, and it reads the ring through the spec: role so a change to the ring's geometry moves it instead of leaving it describing a tone the ring no longer has.",
+      "thresholdForComparison": 3
+    },
+    {
+      "id": "theme.dark/focus-ring-indicator/sunken",
+      "fg": "spec:focus-ring.indicator",
+      "bg": "semantic.theme.dark.sunken",
+      "label": "dark: shipped focus-ring indicator core on sunken; the ring is not themed",
+      "kind": "capability",
+      "purpose": "The focus indicator this package ships, composed against a themed ground introduced here. The ring does not follow [data-theme]: --focus-ring is declared once on :root and redeclared in no theme block, and the preset's ringColor.DEFAULT carries the same single value, so there is no themed alternative to reach for. It measures below the 3:1 SC 1.4.11 asks of a focus indicator and that the gate enforces on the two light surfaces it does cover (focus-ring/surface.default 6.70:1, focus-ring/surface.page 6.01:1). Reported, not enforced: no waiver was added, no row was exempted and no threshold moved. Whether the ring gains a themed variant, or the shortfall is accepted with a stated reason, is owner decision B-themed-ring, open under ADR-0002; this row exists so the number is computed rather than absent, and it reads the ring through the spec: role so a change to the ring's geometry moves it instead of leaving it describing a tone the ring no longer has.",
+      "thresholdForComparison": 3
+    },
+    {
+      "id": "theme.dark/focus-ring-indicator/page",
+      "fg": "spec:focus-ring.indicator",
+      "bg": "semantic.theme.dark.page",
+      "label": "dark: shipped focus-ring indicator core on page; the ring is not themed",
+      "kind": "capability",
+      "purpose": "The focus indicator this package ships, composed against a themed ground introduced here. The ring does not follow [data-theme]: --focus-ring is declared once on :root and redeclared in no theme block, and the preset's ringColor.DEFAULT carries the same single value, so there is no themed alternative to reach for. It measures below the 3:1 SC 1.4.11 asks of a focus indicator and that the gate enforces on the two light surfaces it does cover (focus-ring/surface.default 6.70:1, focus-ring/surface.page 6.01:1). Reported, not enforced: no waiver was added, no row was exempted and no threshold moved. Whether the ring gains a themed variant, or the shortfall is accepted with a stated reason, is owner decision B-themed-ring, open under ADR-0002; this row exists so the number is computed rather than absent, and it reads the ring through the spec: role so a change to the ring's geometry moves it instead of leaving it describing a tone the ring no longer has.",
+      "thresholdForComparison": 3
+    },
+    {
+      "id": "theme.black/focus-ring-indicator/surface",
+      "fg": "spec:focus-ring.indicator",
+      "bg": "semantic.theme.black.surface",
+      "label": "black: shipped focus-ring indicator core on surface; the ring is not themed",
+      "kind": "capability",
+      "purpose": "The focus indicator this package ships, composed against a themed ground introduced here. The ring does not follow [data-theme]: --focus-ring is declared once on :root and redeclared in no theme block, and the preset's ringColor.DEFAULT carries the same single value, so there is no themed alternative to reach for. It measures below the 3:1 SC 1.4.11 asks of a focus indicator and that the gate enforces on the two light surfaces it does cover (focus-ring/surface.default 6.70:1, focus-ring/surface.page 6.01:1). Reported, not enforced: no waiver was added, no row was exempted and no threshold moved. Whether the ring gains a themed variant, or the shortfall is accepted with a stated reason, is owner decision B-themed-ring, open under ADR-0002; this row exists so the number is computed rather than absent, and it reads the ring through the spec: role so a change to the ring's geometry moves it instead of leaving it describing a tone the ring no longer has.",
+      "thresholdForComparison": 3
     }
   ]
 }

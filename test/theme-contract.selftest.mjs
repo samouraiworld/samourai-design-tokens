@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { ROOT, indexTokens, resolve, parseColor, composite, contrastRatio } from '../scripts/lib/tokens.mjs';
+import { SPEC_COLORS } from '../scripts/lib/spec.mjs';
 import preset from '../dist/tailwind.preset.js';
 
 const fixture = JSON.parse(readFileSync(join(ROOT, 'test/fixtures/themes.json'), 'utf8'));
@@ -56,6 +57,24 @@ test('the CSS variable type enumerates the declarations actually generated', () 
   assert.deepEqual(typed, names, 'no phantom or missing CSS variables');
 });
 
+/**
+ * A `spec:` role or a token path, resolved to a colour: the same two forms the
+ * contrast gate accepts. A measurement of a colour the build composes has to
+ * read it the way the build composes it, at its real alpha; naming the token
+ * behind it would report the opaque source instead of the tone that is painted,
+ * and would keep reporting it after the geometry moved. An unknown role is a
+ * hard error rather than a fall-through to token resolution, so a misspelling
+ * cannot become a row that measures nothing.
+ */
+function measurementColor(ref, index) {
+  if (typeof ref === 'string' && ref.startsWith('spec:')) {
+    const role = SPEC_COLORS[ref];
+    if (!role) throw new Error(`unknown spec reference "${ref}" — the roles are ${Object.keys(SPEC_COLORS).join(', ')}`);
+    return role(index);
+  }
+  return parseColor(resolve(ref, index));
+}
+
 function checkContrastCoverage(register) {
   const index = indexTokens(tree);
   for (const [theme, roles] of Object.entries(fixture)) {
@@ -75,8 +94,8 @@ function checkContrastCoverage(register) {
     assert.ok(['decorative', 'capability'].includes(row.kind), `${row.id}: explicit measurement kind`);
     assert.ok(row.purpose?.trim(), `${row.id}: measurement purpose required`);
     assert.equal(row.min, undefined, `${row.id}: non-normative measurement has no acceptance minimum`);
-    const bg = parseColor(resolve(row.bg, index));
-    const fg = composite(parseColor(resolve(row.fg, index)), bg);
+    const bg = measurementColor(row.bg, index);
+    const fg = composite(measurementColor(row.fg, index), bg);
     return `${row.id}: ${contrastRatio(fg, bg).toFixed(3)}:1 (${row.kind}, not normative acceptance)`;
   });
 }
@@ -93,6 +112,9 @@ test('contrast covers every new color and explicitly reports non-normative measu
   const weakened = structuredClone(register);
   weakened.pairs.find((r) => r.id === 'theme.dark/on-inverse/action-hover').min = 3;
   assert.throws(() => checkContrastCoverage(weakened), /actual button text criterion/);
+  const misspelt = structuredClone(register);
+  misspelt.measurements.find((r) => r.id === 'theme.dark/focus-ring-indicator/surface').fg = 'spec:focus-ring.core';
+  assert.throws(() => checkContrastCoverage(misspelt), /unknown spec reference "spec:focus-ring\.core"/);
 });
 
 test('the acceptance contract detects missing, changed and frozen output', () => {
