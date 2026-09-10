@@ -46,12 +46,15 @@ const flat = (path) => {
 };
 
 // --- Spec constants ---------------------------------------------------------
-// The page gradient and the focus ring are fixed by the design system and are
-// not tokens in v0.1. They live in scripts/lib/spec.mjs because the contrast
-// gate reads them too: a geometry only the build knows is a geometry no check
-// can measure. Each is anchored to a token it derives from, so a palette change
-// flows through and a token rename fails the build rather than the browser.
-// ADR-0002.
+// The frost page gradient and the focus ring are fixed by the design system and
+// are not tokens. The themed page gradients are: `semantic.theme.*.page-grad`
+// and the `color.theme-*.page-grad` primitives behind them reach dist/ through
+// the `case 'gradient'` branch below, like any other value. Only the frost
+// gradient that `--bg-page` carries is composed from the constants here. Both
+// constants live in scripts/lib/spec.mjs because the contrast gate reads them
+// too: a geometry only the build knows is a geometry no check can measure. Each
+// is anchored to a token it derives from, so a palette change flows through and
+// a token rename fails the build rather than the browser. ADR-0002.
 
 // --- Path → CSS custom property --------------------------------------------
 const kebab = (s) => s.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
