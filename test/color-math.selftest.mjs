@@ -22,7 +22,7 @@ import {
   contrastRatio,
   toHex,
 } from '../scripts/lib/tokens.mjs';
-import { SPEC, focusRingLayers, focusRingIndicator, focusRingOuter } from '../scripts/lib/spec.mjs';
+import { SPEC, THEMES, focusRingLayers, focusRingIndicator, focusRingOuter } from '../scripts/lib/spec.mjs';
 
 const index = indexTokens(loadTokens());
 const at2 = (n) => Number(n.toFixed(2));
@@ -61,22 +61,42 @@ test('compositing onto a translucent background is an error, not a guess', () =>
 });
 
 test('the ring is measured as it is painted: an opaque indicator inside a translucent halo', () => {
-  const layers = focusRingLayers(index);
+  // The light ring, on the two unthemed surfaces a page with no [data-theme]
+  // still paints. Light is the default theme and nothing else; it is named
+  // here rather than defaulted to, because a ring read for the wrong theme is
+  // the defect the themed ring closes.
+  const layers = focusRingLayers(index, 'light');
   assert.equal(layers.length, 2, 'the ring is two-tone');
   assert.deepEqual(layers.map((l) => l.width), ['2px', '5px'], 'innermost first');
 
-  const indicator = focusRingIndicator(index);
+  const indicator = focusRingIndicator(index, 'light');
   assert.equal(indicator.color.a, 1, 'the tone against the control is opaque; a translucent one is what SC 1.4.11 rejected');
-  assert.equal(at2(contrastRatio(composite(indicator.color, WHITE), WHITE)), 6.70);
-  assert.equal(at2(contrastRatio(composite(indicator.color, PAGE), PAGE)), 6.01);
+  assert.equal(at2(contrastRatio(composite(indicator.color, WHITE), WHITE)), 8.07);
+  assert.equal(at2(contrastRatio(composite(indicator.color, PAGE), PAGE)), 7.23);
 
-  const outer = focusRingOuter(index);
-  assert.equal(at2(contrastRatio(composite(outer.color, WHITE), WHITE)), 1.78);
-  assert.equal(at2(contrastRatio(composite(outer.color, PAGE), PAGE)), 1.74);
+  const outer = focusRingOuter(index, 'light');
+  assert.equal(at2(contrastRatio(composite(outer.color, WHITE), WHITE)), 1.86);
+  assert.equal(at2(contrastRatio(composite(outer.color, PAGE), PAGE)), 1.82);
   assert.ok(
     contrastRatio(composite(outer.color, WHITE), WHITE) < 3,
     'the halo alone stays below 3:1 — if it ever clears it, the opaque core is carrying nothing and the ring needs a decision, not a silent pass',
   );
+});
+
+test('each theme paints its own ring, and the two variants are different rings', () => {
+  // A single ring value cannot clear 3:1 on every ground this package ships,
+  // which is the whole reason the core follows [data-theme]. Two rings that
+  // resolve to one colour, or a variant that resolves to the other's, is that
+  // single value back with more names on it.
+  const cores = THEMES.map((theme) => focusRingIndicator(index, theme).literal);
+  assert.equal(new Set(cores).size >= 2, true, 'the themes do not all paint one core');
+  for (const theme of THEMES) {
+    assert.notEqual(
+      focusRingIndicator(index, theme).literal,
+      focusRingIndicator(index, theme, 'on-inverse').literal,
+      `${theme}: the on-inverse ring must not be the ring for normal grounds`,
+    );
+  }
 });
 
 test('a ring whose layers are not ordered innermost first is rejected rather than measured', () => {
@@ -85,34 +105,95 @@ test('a ring whose layers are not ordered innermost first is rejected rather tha
   const real = SPEC.focusRing.layers;
   try {
     SPEC.focusRing.layers = [...real].reverse();
-    assert.throws(() => focusRingLayers(index), /must be listed innermost first/);
+    assert.throws(() => focusRingLayers(index, 'light'), /must be listed innermost first/);
     SPEC.focusRing.layers = [];
-    assert.throws(() => focusRingLayers(index), /declares no layer/);
+    assert.throws(() => focusRingLayers(index, 'light'), /declares no layer/);
     SPEC.focusRing.layers = [{ id: 'core', width: '2', alpha: 1 }];
-    assert.throws(() => focusRingLayers(index), /expected a pixel length/);
+    assert.throws(() => focusRingLayers(index, 'light'), /expected a pixel length/);
     SPEC.focusRing.layers = [{ id: 'core', width: '2px', alpha: 0 }];
-    assert.throws(() => focusRingLayers(index), /expected a number in \(0, 1\]/);
+    assert.throws(() => focusRingLayers(index, 'light'), /expected a number in \(0, 1\]/);
   } finally {
     SPEC.focusRing.layers = real;
   }
 });
 
-test('the focus-ring rows address the ring by role, so a geometry change moves them', () => {
+test('a ring asked for by an unknown theme or variant is refused, not silently defaulted', () => {
+  // The failure mode this replaces: a caller that omitted the theme used to get
+  // the one ring there was. A default here would put the light ring back on
+  // every dark ground and print a ratio for it.
+  assert.throws(() => focusRingLayers(index, 'sepia'), /"sepia" is not a theme; the themes are light, dark, black/);
+  assert.throws(() => focusRingLayers(index, undefined), /undefined is not a theme/);
+  assert.throws(
+    () => focusRingLayers(index, 'light', 'on-nothing'),
+    /"on-nothing" is not a ring variant; the variants are default, on-inverse/,
+  );
+});
+
+// The grounds the ring is claimed to clear, which is what makes the claim a
+// check rather than a sentence. The six shell containers and the ten painted
+// backgrounds a control can sit on take the ring for normal grounds; the two
+// inverse panels take the on-inverse variant, because the normal core is the
+// wrong side of that ground.
+const NORMAL_GROUNDS = ['surface', 'sunken', 'page', 'hairline', 'muted', 'muted-2'];
+const PAINTED_GROUNDS = ['accent-soft', 'ok-soft', 'warn-soft', 'bad-soft', 't1-bg', 't2-bg', 't3-bg', 't4-bg', 't5-bg', 't6-bg'];
+const INVERSE_GROUNDS = ['inverse', 'inverse-2'];
+
+function assertRingCoverage(pairs) {
   // The regression this file exists for: rows pointed at `semantic.action.primary`
-  // print 6.70:1 for any geometry, including the single 35 % halo that measures
-  // 1.78:1. Addressing the ring by role is what ties the row to what ships.
-  const { pairs } = JSON.parse(readFileSync(join(ROOT, 'contrast-pairs.json'), 'utf8'));
-  const ring = pairs.filter((p) => p.id.startsWith('focus-ring'));
-  assert.equal(ring.length, 4, 'both tones, on both surfaces');
+  // print one ratio for any geometry, including the single 35 % halo that
+  // measures 1.86:1 on white. Addressing the ring by role is what ties the row
+  // to what ships, and carrying the theme in the role is what ties it to the
+  // ring that theme actually paints.
+  const ring = pairs.filter((p) => String(p.fg).startsWith('spec:focus-ring'));
 
   for (const pair of ring) {
-    assert.match(pair.fg, /^spec:focus-ring\.(indicator|outer)$/, `${pair.id} must name a ring role`);
+    assert.match(
+      pair.fg,
+      /^spec:focus-ring(-on-inverse)?\.(light|dark|black)\.(indicator|outer)$/,
+      `${pair.id} must name a ring role, and name the theme in it`,
+    );
+    if (pair.fg.endsWith('.indicator')) {
+      assert.equal(pair.min, 3.0, `${pair.id} is the indicator and is gated at 3:1`);
+      assert.equal(pair.expect, undefined, `${pair.id} must be gated, not inverted`);
+    } else {
+      assert.equal(pair.expect, 'fail', `${pair.id} pins the halo as never the indicator`);
+    }
   }
-  for (const pair of ring.filter((p) => p.fg === 'spec:focus-ring.indicator')) {
-    assert.equal(pair.min, 3.0, `${pair.id} is the indicator and is gated at 3:1`);
-    assert.equal(pair.expect, undefined, `${pair.id} must be gated, not inverted`);
+
+  const grounds = (fg) => new Set(ring.filter((p) => p.fg === fg).map((p) => p.bg));
+  for (const theme of THEMES) {
+    const normal = grounds(`spec:focus-ring.${theme}.indicator`);
+    for (const ground of [...NORMAL_GROUNDS, ...PAINTED_GROUNDS]) {
+      assert.ok(normal.has(`semantic.theme.${theme}.${ground}`), `${theme}: the ring is claimed to clear ${ground} and no row measures it`);
+    }
+    const inverse = grounds(`spec:focus-ring-on-inverse.${theme}.indicator`);
+    for (const ground of INVERSE_GROUNDS) {
+      assert.ok(inverse.has(`semantic.theme.${theme}.${ground}`), `${theme}: the on-inverse ring is claimed to clear ${ground} and no row measures it`);
+    }
   }
-  for (const pair of ring.filter((p) => p.fg === 'spec:focus-ring.outer')) {
-    assert.equal(pair.expect, 'fail', `${pair.id} pins the halo as never the indicator`);
-  }
+}
+
+test('every ground the themed ring is claimed to clear carries a normative row', () => {
+  const { pairs } = JSON.parse(readFileSync(join(ROOT, 'contrast-pairs.json'), 'utf8'));
+  assertRingCoverage(pairs);
+
+  // A ground quietly dropped is the claim quietly narrowed.
+  assert.throws(
+    () => assertRingCoverage(pairs.filter((p) => p.id !== 'theme.dark/focus-ring/muted-2')),
+    /dark: the ring is claimed to clear muted-2 and no row measures it/,
+  );
+  assert.throws(
+    () => assertRingCoverage(pairs.filter((p) => p.id !== 'theme.black/focus-ring-on-inverse/inverse-2')),
+    /black: the on-inverse ring is claimed to clear inverse-2 and no row measures it/,
+  );
+  // A role with no theme in it measures whichever ring the spec hands back.
+  const untethered = structuredClone(pairs);
+  untethered.find((p) => p.id === 'theme.dark/focus-ring/surface').fg = 'spec:focus-ring.indicator';
+  assert.throws(() => assertRingCoverage(untethered), /must name a ring role, and name the theme in it/);
+  const loosened = structuredClone(pairs);
+  loosened.find((p) => p.id === 'theme.black/focus-ring-on-inverse/inverse').min = 1.5;
+  assert.throws(() => assertRingCoverage(loosened), /is the indicator and is gated at 3:1/);
+  const promoted = structuredClone(pairs);
+  delete promoted.find((p) => p.id === 'focus-ring-halo/surface.default').expect;
+  assert.throws(() => assertRingCoverage(promoted), /pins the halo as never the indicator/);
 });

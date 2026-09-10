@@ -202,7 +202,6 @@
   --action-primary-hover: #2340C4;
   --action-on-primary: #FFFFFF;
   --action-danger: #C2372B;
-  --focus-ring: 0 0 0 2px #2B4BDB, 0 0 0 5px rgba(43, 75, 219, 0.35);
 
   /* semantic — controls */
   --control-selection-ring-width: 5px; /* Width of the existing selected-control ring; separate from keyboard focus. */
@@ -281,7 +280,8 @@
   --shell-dock-offset: 24px;
 }
 
-/* Complete shell themes; legacy variables above retain their values. */
+/* Complete shell themes, and the focus ring, which follows them; the legacy
+   variables above retain their values. */
 :root, [data-theme="light"] {
   --c-page: #EEF3F8;
   --c-page-grad: linear-gradient(115deg,#DCE6F0 0%,#EEF3F8 45%,#FFFFFF 100%);
@@ -332,6 +332,10 @@
   --c-t5-fg: #56626E;
   --c-t6-bg: #DCE6F0;
   --c-t6-fg: #2F3A45;
+  --focus-ring: 0 0 0 2px #2340C4, 0 0 0 5px rgba(35, 64, 196, 0.35);
+  --focus-ring-color: #2340C4;
+  --focus-ring-on-inverse: 0 0 0 2px #FFFFFF, 0 0 0 5px rgba(255, 255, 255, 0.35);
+  --focus-ring-on-inverse-color: #FFFFFF;
 }
 
 [data-theme="dark"] {
@@ -384,6 +388,10 @@
   --c-t5-fg: #B9C6D4;
   --c-t6-bg: #26303A;
   --c-t6-fg: #E8EFF6;
+  --focus-ring: 0 0 0 2px #A9BBFF, 0 0 0 5px rgba(169, 187, 255, 0.35);
+  --focus-ring-color: #A9BBFF;
+  --focus-ring-on-inverse: 0 0 0 2px #F3F7FB, 0 0 0 5px rgba(243, 247, 251, 0.35);
+  --focus-ring-on-inverse-color: #F3F7FB;
 }
 
 [data-theme="black"] {
@@ -436,4 +444,8 @@
   --c-t5-fg: #C3CDD8;
   --c-t6-bg: #1B1E22;
   --c-t6-fg: #F1F4F8;
+  --focus-ring: 0 0 0 2px #A9BBFF, 0 0 0 5px rgba(169, 187, 255, 0.35);
+  --focus-ring-color: #A9BBFF;
+  --focus-ring-on-inverse: 0 0 0 2px #F7FAFC, 0 0 0 5px rgba(247, 250, 252, 0.35);
+  --focus-ring-on-inverse-color: #F7FAFC;
 }

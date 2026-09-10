@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { ROOT, loadTokens, indexTokens, resolve } from '../scripts/lib/tokens.mjs';
-import { focusRingIndicator } from '../scripts/lib/spec.mjs';
+import { focusRingIndicatorWidth } from '../scripts/lib/spec.mjs';
 import preset from '../dist/tailwind.preset.js';
 
 function assertSelectionRing(tree, css, config) {
@@ -19,7 +19,7 @@ function assertSelectionRing(tree, css, config) {
   // claim did not.
   assert.equal(
     config.theme.extend.ringWidth.DEFAULT,
-    focusRingIndicator(index).width,
+    focusRingIndicatorWidth(),
     'focus ring width remains unchanged',
   );
   // ...and the two rings stay tellable apart. Addressing the focus ring by its

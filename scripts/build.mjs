@@ -17,7 +17,14 @@
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { ROOT, loadTokens, walkTokens, indexTokens, resolve, resolveValue, parseColor, aliasTarget } from './lib/tokens.mjs';
-import { SPEC, focusRingLayers, focusRingIndicator } from './lib/spec.mjs';
+import {
+  SPEC,
+  THEMES,
+  focusRingLayers,
+  focusRingIndicatorWidth,
+  focusRingProperty,
+  focusRingColorProperty,
+} from './lib/spec.mjs';
 
 const DIST = join(ROOT, 'dist');
 const CHECK = process.argv.includes('--check');
@@ -27,7 +34,6 @@ const tokens = walkTokens(tree);
 const index = indexTokens(tree);
 const byPath = new Map(tokens.map((t) => [t.path, t]));
 
-const THEMES = ['light', 'dark', 'black'];
 const themeGroups = tree.semantic?.theme;
 if (!themeGroups || Object.keys(themeGroups).join(',') !== THEMES.join(',')) {
   throw new Error('expected complete theme set: light, dark, black');
@@ -55,6 +61,10 @@ const flat = (path) => {
 // too: a geometry only the build knows is a geometry no check can measure. Each
 // is anchored to a token it derives from, so a palette change flows through and
 // a token rename fails the build rather than the browser. ADR-0002.
+//
+// The ring's core is a theme role, so it is emitted inside each theme block
+// below rather than once on `:root`. The light block's selector carries `:root`
+// with it, which is how the unthemed default keeps working.
 
 // --- Path → CSS custom property --------------------------------------------
 const kebab = (s) => s.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
@@ -165,6 +175,36 @@ function tone(layer) {
   return layer.alpha === 1 ? layer.literal : rgba(layer.literal, layer.alpha);
 }
 
+const RING_VARIANTS = Object.keys(SPEC.focusRing.variants);
+
+/** Every custom property the rings declare, in the order a theme block emits them. */
+const RING_VARIABLES = RING_VARIANTS.flatMap((variant) => [
+  focusRingProperty(variant),
+  focusRingColorProperty(variant),
+]);
+
+/**
+ * One theme's rings as CSS: per variant, the full two-tone box-shadow — one
+ * layer per tone, in the order lib/spec.mjs lists them, innermost first, which
+ * is the order box-shadow paints on top in — and the indicator tone on its own.
+ *
+ * The indicator gets a property of its own because Tailwind's `ring` utility is
+ * single-tone: the preset points `ringColor` at it, so the utility follows
+ * `[data-theme]` instead of freezing one theme's ring into dist/. It carries
+ * whatever `tone()` produces, alpha included, rather than the opaque token
+ * behind it.
+ */
+function focusRingDeclarations(theme) {
+  return RING_VARIANTS.flatMap((variant) => {
+    const layers = focusRingLayers(index, theme, variant);
+    const shadow = layers.map((layer) => `0 0 0 ${layer.width} ${tone(layer)}`).join(', ');
+    return [
+      `  ${focusRingProperty(variant)}: ${shadow};`,
+      `  ${focusRingColorProperty(variant)}: ${tone(layers[0])};`,
+    ];
+  });
+}
+
 // --- dist/tokens.css --------------------------------------------------------
 const HEADER = `/* GENERATED FILE — DO NOT EDIT.
    Written by scripts/build.mjs from tokens.json, which is the source of truth.
@@ -186,10 +226,6 @@ function buildCss() {
     .map(([path, stop]) => `var(--${cssName(path)}) ${stop}`)
     .join(', ')})`;
 
-  // One box-shadow per tone, in the order lib/spec.mjs lists them: innermost
-  // first, which is the order box-shadow paints on top in.
-  const focus = focusRingLayers(index).map((layer) => `0 0 0 ${layer.width} ${tone(layer)}`).join(', ');
-
   const sections = [
     ['primitives — colour', pick('color').map(declare)],
     [
@@ -201,7 +237,7 @@ function buildCss() {
       ],
     ],
     ['semantic — text', pick('semantic.text').map(declare)],
-    ['semantic — actions', [...pick('semantic.action').map(declare), `  --focus-ring: ${focus};`]],
+    ['semantic — actions', pick('semantic.action').map(declare)],
     ['semantic — controls', pick('semantic.control').map(declare)],
     ['type', pick('font').map(declare)],
     ['space (4px base)', pick('space').map(declare)],
@@ -218,10 +254,10 @@ function buildCss() {
   const themes = THEMES.map((name) => {
     const selector = name === 'light' ? ':root, [data-theme="light"]' : `[data-theme="${name}"]`;
     const values = themeRoles.map((role) => `  --c-${role}: ${cssValue(byPath.get(`semantic.theme.${name}.${role}`))};`);
-    return `${selector} {\n${values.join('\n')}\n}`;
+    return `${selector} {\n${[...values, ...focusRingDeclarations(name)].join('\n')}\n}`;
   }).join('\n\n');
 
-  return `${HEADER}\n:root {\n${body}\n}\n\n/* Complete shell themes; legacy variables above retain their values. */\n${themes}\n`;
+  return `${HEADER}\n:root {\n${body}\n}\n\n/* Complete shell themes, and the focus ring, which follows them; the legacy\n   variables above retain their values. */\n${themes}\n`;
 }
 
 // --- dist/tailwind.preset.js ------------------------------------------------
@@ -330,13 +366,24 @@ function buildPreset() {
     boxShadow: shadows,
     backgroundImage: { frost: gradient, 'c-page-gradient': 'var(--c-page-grad)' },
     // Tailwind's ring utility is single-tone, so it carries the indicator —
-    // the tone SC 1.4.11 measures. The full two-tone ring is on --focus-ring.
+    // the tone SC 1.4.11 measures. The full two-tone ring is on --focus-ring
+    // and --focus-ring-on-inverse. Each key is a `var()` rather than a value:
+    // the ring follows `[data-theme]`, and a hex here would freeze one theme's
+    // ring into every theme, which is the defect the themed ring closes.
+    // `ring-on-inverse` is the variant for a control on an inverse panel.
     // `control-selection` is the selected-control ring, a different indicator
     // with its own token; it must never be the width the bare `ring` utility
     // gets, or the two states render identically.
-    ringColor: { DEFAULT: tone(focusRingIndicator(index)) },
+    ringColor: Object.fromEntries(
+      RING_VARIANTS.map((variant) => [
+        // Tailwind reads the bare `ring` class off DEFAULT; `default` is the
+        // absence of a variant, not a variant named "default".
+        variant === 'default' ? 'DEFAULT' : variant,
+        `var(${focusRingColorProperty(variant)})`,
+      ]),
+    ),
     ringWidth: {
-      DEFAULT: focusRingIndicator(index).width,
+      DEFAULT: focusRingIndicatorWidth(),
       'control-selection': flat('semantic.control.selection-ring-width'),
     },
     transitionTimingFunction: Object.fromEntries(
@@ -372,7 +419,7 @@ export default {
 function buildTypes() {
   const vars = [...new Set([
     '--bg-page',
-    '--focus-ring',
+    ...RING_VARIABLES,
     ...tokens.map((t) => `--${cssName(t.path)}`),
   ])].sort();
   const paths = tokens.map((t) => t.path).sort();

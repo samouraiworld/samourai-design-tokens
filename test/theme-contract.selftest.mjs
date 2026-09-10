@@ -113,7 +113,7 @@ test('contrast covers every new color and explicitly reports non-normative measu
   weakened.pairs.find((r) => r.id === 'theme.dark/on-inverse/action-hover').min = 3;
   assert.throws(() => checkContrastCoverage(weakened), /actual button text criterion/);
   const misspelt = structuredClone(register);
-  misspelt.measurements.find((r) => r.id === 'theme.dark/focus-ring-indicator/surface').fg = 'spec:focus-ring.core';
+  misspelt.measurements.find((r) => r.id === 'focus-ring-on-inverse-halo/theme.dark.inverse').fg = 'spec:focus-ring.core';
   assert.throws(() => checkContrastCoverage(misspelt), /unknown spec reference "spec:focus-ring\.core"/);
 });
 
