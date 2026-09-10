@@ -37,7 +37,7 @@ ADR-0004 names three tests, each guarding one failure that is otherwise complete
 | Test | Runs here | Fails when |
 |---|---|---|
 | **Token resolution** | exported from here, **runs in each consumer** | A Tailwind class names one of our colour families and the token does not exist. Tailwind emits no CSS and no error; for `border-*` the element falls back to preflight's `border: 0 solid #e5e7eb`. |
-| **Contrast** | here, on every PR | A declared pair falls below its WCAG minimum and is not in the allowlist with a reason. Translucent colours are composited before measuring; an unresolvable pair is a hard failure, never a skipped row. |
+| **Contrast** | here, on every PR | A declared pair falls below its WCAG minimum and is not in the allowlist with a reason — or the allowlist entry no longer describes the pair: each entry is bound to the pair's `fg`, `bg`, `min` and the ratio it was written at, so a re-pointed pair, a loosened minimum or a colour that moved fails instead of inheriting the old excuse. Translucent colours are composited before measuring; an unresolvable pair is a hard failure, never a skipped row. |
 | **Version drift** | each consumer's CI | The consumer's pinned version is more than one minor behind the tag published here. Without it a repository sits on an old palette indefinitely and nothing complains. |
 
 A fourth gate is local to this repository: **drift**, which asserts `dist/` is byte-identical to a fresh build. `dist/` is committed so consumers can install from git, and a committed build output is a copy — the same failure mode ADR-0004 rejects — unless something proves it is still generated.
@@ -49,6 +49,10 @@ Four jobs, in `.github/workflows/ci.yml`. Three do work: **Grammar, contrast, dr
 `ci-ok` is the single check branch protection points at. Requiring the three working jobs by name instead would keep the gate list in repository settings, where it drifts out of step with the workflow: a renamed job leaves the old context required forever, blocking every PR on a check nothing will ever report, while the job that replaced it is required by nothing. Adding, renaming or splitting a gate is therefore a change to `ci.yml` alone.
 
 Before it decides anything, `ci-ok` proves both of its scripts can still fail — `aggregate-result.selftest.sh` and `check-aggregate-covers-jobs.selftest.sh` — and then runs both: `check-aggregate-covers-jobs.py`, which fails if a job exists in `ci.yml` but is missing from `ci-ok`'s `needs:` (such a gate could go red while the required check stayed green), and `aggregate-result.py`, which reads the verdicts. A required check nobody has ever seen fail is a decoration, and this one is the last thing standing between a red gate and a green merge button.
+
+## Releasing
+
+A tag is the release: there is no registry and the package is `private: true`. The procedure — gates green on `main`, `dist/` drift-clean, the contrast register read, the decider of every value change named, an annotated `vX.Y.Z` tag, then one repin pull request per consumer — is in [`RELEASE.md`](RELEASE.md). What each tag carries is in [`CHANGELOG.md`](CHANGELOG.md).
 
 ## How the hub and the console consume it
 
@@ -123,3 +127,4 @@ Two things the build emits are still not tokens: the frost page gradient behind 
 2. Add a row to `contrast-pairs.json` for every surface the token can sit on or behind. A colour with no row is unguarded, and DESIGN_SYSTEM.md forbids one.
 3. `npm run build` and commit `dist/`.
 4. `npm test`. If a pair fails, the fix is the value — not an allowlist entry, unless the design workstream decided otherwise and the reason says so.
+5. If an allowlist entry is what the decision calls for, it carries the pair's `fg`, `bg` and `min`, the ratio measured today, a reason and a decision. `test/check-contrast.selftest.mjs` is where a new way the gate must fail gets its mutation.

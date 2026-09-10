@@ -3,14 +3,11 @@
   "version": "0.1.0",
   "description": "Design tokens of samourai.app: DTCG source, generated CSS variables and Tailwind preset, contrast gate",
   "license": "UNLICENSED",
-  "private": false,
+  "private": true,
   "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/samouraiworld/samourai-design-tokens.git"
-  },
-  "publishConfig": {
-    "access": "restricted"
   },
   "files": [
     "dist",
