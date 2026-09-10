@@ -2440,7 +2440,16 @@
       "bg": "semantic.theme.light.inverse",
       "label": "light: the on-inverse ring's outermost tone alone on the inverse panel, at its own alpha",
       "kind": "decorative",
-      "purpose": "The outer softening of the on-inverse ring, at 35 %, measured alone. It is not the indicator: the opaque core is, and theme.light/focus-ring-on-inverse/inverse and /inverse-2 gate that core at 3:1. This tone carries no inverted row of its own, unlike the default ring's halo: that one stays below 3:1 on all 54 theme-and-ground combinations it was measured over, while this one reaches 3.04:1 on dark.inverse and 3.15:1 on black.inverse-2, so a row asserting it stays below 3:1 would be false. Reported so the figure is computed rather than absent.",
+      "purpose": "The outer softening of the on-inverse ring, at 35 %, measured alone. It is not the indicator: the opaque core is, and theme.light/focus-ring-on-inverse/inverse and /inverse-2 gate that core at 3:1. This tone carries no inverted row of its own, unlike the default ring's halo: that one stays below 3:1 on all 54 theme-and-ground combinations it was measured over, while this one reaches 3.04:1 on dark.inverse and 3.15:1 on black.inverse-2, so a row asserting it stays below 3:1 would be false. Both inverse panels carry a row, in every theme, so each figure quoted for this tone is derived here rather than copied into prose. What holds \u201cthe halo is never the indicator\u201d on the two grounds where an inverted row cannot is the opaque core, which test/color-math.selftest.mjs asserts across every theme and every variant.",
+      "thresholdForComparison": 3
+    },
+    {
+      "id": "focus-ring-on-inverse-halo/theme.light.inverse-2",
+      "fg": "spec:focus-ring-on-inverse.light.outer",
+      "bg": "semantic.theme.light.inverse-2",
+      "label": "light: the on-inverse ring's outermost tone alone on the second inverse panel, at its own alpha",
+      "kind": "decorative",
+      "purpose": "The outer softening of the on-inverse ring, at 35 %, measured alone. It is not the indicator: the opaque core is, and theme.light/focus-ring-on-inverse/inverse and /inverse-2 gate that core at 3:1. This tone carries no inverted row of its own, unlike the default ring's halo: that one stays below 3:1 on all 54 theme-and-ground combinations it was measured over, while this one reaches 3.04:1 on dark.inverse and 3.15:1 on black.inverse-2, so a row asserting it stays below 3:1 would be false. Both inverse panels carry a row, in every theme, so each figure quoted for this tone is derived here rather than copied into prose. What holds \u201cthe halo is never the indicator\u201d on the two grounds where an inverted row cannot is the opaque core, which test/color-math.selftest.mjs asserts across every theme and every variant.",
       "thresholdForComparison": 3
     },
     {
@@ -2449,7 +2458,16 @@
       "bg": "semantic.theme.dark.inverse",
       "label": "dark: the on-inverse ring's outermost tone alone on the inverse panel, at its own alpha",
       "kind": "decorative",
-      "purpose": "The outer softening of the on-inverse ring, at 35 %, measured alone. It is not the indicator: the opaque core is, and theme.dark/focus-ring-on-inverse/inverse and /inverse-2 gate that core at 3:1. This tone carries no inverted row of its own, unlike the default ring's halo: that one stays below 3:1 on all 54 theme-and-ground combinations it was measured over, while this one reaches 3.04:1 on dark.inverse and 3.15:1 on black.inverse-2, so a row asserting it stays below 3:1 would be false. Reported so the figure is computed rather than absent.",
+      "purpose": "The outer softening of the on-inverse ring, at 35 %, measured alone. It is not the indicator: the opaque core is, and theme.dark/focus-ring-on-inverse/inverse and /inverse-2 gate that core at 3:1. This tone carries no inverted row of its own, unlike the default ring's halo: that one stays below 3:1 on all 54 theme-and-ground combinations it was measured over, while this one reaches 3.04:1 on dark.inverse and 3.15:1 on black.inverse-2, so a row asserting it stays below 3:1 would be false. Both inverse panels carry a row, in every theme, so each figure quoted for this tone is derived here rather than copied into prose. What holds \u201cthe halo is never the indicator\u201d on the two grounds where an inverted row cannot is the opaque core, which test/color-math.selftest.mjs asserts across every theme and every variant.",
+      "thresholdForComparison": 3
+    },
+    {
+      "id": "focus-ring-on-inverse-halo/theme.dark.inverse-2",
+      "fg": "spec:focus-ring-on-inverse.dark.outer",
+      "bg": "semantic.theme.dark.inverse-2",
+      "label": "dark: the on-inverse ring's outermost tone alone on the second inverse panel, at its own alpha",
+      "kind": "decorative",
+      "purpose": "The outer softening of the on-inverse ring, at 35 %, measured alone. It is not the indicator: the opaque core is, and theme.dark/focus-ring-on-inverse/inverse and /inverse-2 gate that core at 3:1. This tone carries no inverted row of its own, unlike the default ring's halo: that one stays below 3:1 on all 54 theme-and-ground combinations it was measured over, while this one reaches 3.04:1 on dark.inverse and 3.15:1 on black.inverse-2, so a row asserting it stays below 3:1 would be false. Both inverse panels carry a row, in every theme, so each figure quoted for this tone is derived here rather than copied into prose. What holds \u201cthe halo is never the indicator\u201d on the two grounds where an inverted row cannot is the opaque core, which test/color-math.selftest.mjs asserts across every theme and every variant.",
       "thresholdForComparison": 3
     },
     {
@@ -2458,7 +2476,16 @@
       "bg": "semantic.theme.black.inverse",
       "label": "black: the on-inverse ring's outermost tone alone on the inverse panel, at its own alpha",
       "kind": "decorative",
-      "purpose": "The outer softening of the on-inverse ring, at 35 %, measured alone. It is not the indicator: the opaque core is, and theme.black/focus-ring-on-inverse/inverse and /inverse-2 gate that core at 3:1. This tone carries no inverted row of its own, unlike the default ring's halo: that one stays below 3:1 on all 54 theme-and-ground combinations it was measured over, while this one reaches 3.04:1 on dark.inverse and 3.15:1 on black.inverse-2, so a row asserting it stays below 3:1 would be false. Reported so the figure is computed rather than absent.",
+      "purpose": "The outer softening of the on-inverse ring, at 35 %, measured alone. It is not the indicator: the opaque core is, and theme.black/focus-ring-on-inverse/inverse and /inverse-2 gate that core at 3:1. This tone carries no inverted row of its own, unlike the default ring's halo: that one stays below 3:1 on all 54 theme-and-ground combinations it was measured over, while this one reaches 3.04:1 on dark.inverse and 3.15:1 on black.inverse-2, so a row asserting it stays below 3:1 would be false. Both inverse panels carry a row, in every theme, so each figure quoted for this tone is derived here rather than copied into prose. What holds \u201cthe halo is never the indicator\u201d on the two grounds where an inverted row cannot is the opaque core, which test/color-math.selftest.mjs asserts across every theme and every variant.",
+      "thresholdForComparison": 3
+    },
+    {
+      "id": "focus-ring-on-inverse-halo/theme.black.inverse-2",
+      "fg": "spec:focus-ring-on-inverse.black.outer",
+      "bg": "semantic.theme.black.inverse-2",
+      "label": "black: the on-inverse ring's outermost tone alone on the second inverse panel, at its own alpha",
+      "kind": "decorative",
+      "purpose": "The outer softening of the on-inverse ring, at 35 %, measured alone. It is not the indicator: the opaque core is, and theme.black/focus-ring-on-inverse/inverse and /inverse-2 gate that core at 3:1. This tone carries no inverted row of its own, unlike the default ring's halo: that one stays below 3:1 on all 54 theme-and-ground combinations it was measured over, while this one reaches 3.04:1 on dark.inverse and 3.15:1 on black.inverse-2, so a row asserting it stays below 3:1 would be false. Both inverse panels carry a row, in every theme, so each figure quoted for this tone is derived here rather than copied into prose. What holds \u201cthe halo is never the indicator\u201d on the two grounds where an inverted row cannot is the opaque core, which test/color-math.selftest.mjs asserts across every theme and every variant.",
       "thresholdForComparison": 3
     }
   ]
