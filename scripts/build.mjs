@@ -165,6 +165,7 @@ function buildCss() {
     ],
     ['semantic — text', pick('semantic.text').map(declare)],
     ['semantic — actions', [...pick('semantic.action').map(declare), `  --focus-ring: ${focus};`]],
+    ['semantic — controls', pick('semantic.control').map(declare)],
     ['type', pick('font').map(declare)],
     ['space (4px base)', pick('space').map(declare)],
     ['radius', pick('radius').map(declare)],
@@ -241,7 +242,7 @@ function buildPreset() {
     if (key.startsWith('$')) continue;
     colors[key] = '$value' in child ? flat(`color.${key}`) : scaleObject(`color.${key}`);
   }
-  for (const t of pick('semantic')) colors[mechanicalName(t.path)] = flat(t.path);
+  for (const t of pick('semantic').filter((t) => t.type === 'color')) colors[mechanicalName(t.path)] = flat(t.path);
   for (const [nick, path] of Object.entries(PRESET_NICKNAMES)) colors[nick] = flat(path);
 
   const shadows = Object.fromEntries(
@@ -269,8 +270,14 @@ function buildPreset() {
     backgroundImage: { frost: gradient },
     // Tailwind's ring utility is single-tone, so it carries the indicator —
     // the tone SC 1.4.11 measures. The full two-tone ring is on --focus-ring.
+    // `control-selection` is the selected-control ring, a different indicator
+    // with its own token; it must never be the width the bare `ring` utility
+    // gets, or the two states render identically.
     ringColor: { DEFAULT: tone(focusRingIndicator(index)) },
-    ringWidth: { DEFAULT: focusRingIndicator(index).width },
+    ringWidth: {
+      DEFAULT: focusRingIndicator(index).width,
+      'control-selection': flat('semantic.control.selection-ring-width'),
+    },
     transitionTimingFunction: Object.fromEntries(
       pick('motion.easing').map((t) => [t.path.slice('motion.easing.'.length), cssValue(t)]),
     ),

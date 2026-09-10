@@ -59,6 +59,9 @@
   --action-danger: #C2372B;
   --focus-ring: 0 0 0 2px #2B4BDB, 0 0 0 5px rgba(43, 75, 219, 0.35);
 
+  /* semantic — controls */
+  --control-selection-ring-width: 5px; /* Width of the existing selected-control ring; separate from keyboard focus. */
+
   /* type */
   --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
@@ -90,6 +93,7 @@
   --sp-8: 32px;
   --sp-10: 40px;
   --sp-12: 48px;
+  --sp-control-selection-ring-width: 5px;
 
   /* radius */
   --r-sm: 6px; /* inputs */
