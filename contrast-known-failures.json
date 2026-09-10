@@ -1,82 +1,33 @@
 {
-  "$comment": "The explicit allowlist. A pair in contrast-pairs.json that falls below its minimum and is NOT listed here fails the gate; a pair listed here that starts passing ALSO fails the gate, so an entry cannot outlive the problem it describes. `reason` is mandatory and is what a reviewer reads; `decision` names what would let the entry be deleted. Adding an entry is a design decision, not a build fix — see AGENTS.md.",
+  "$comment": "The explicit allowlist. A pair in contrast-pairs.json that falls below its minimum and is NOT listed here fails the gate; a pair listed here that starts passing ALSO fails the gate, so an entry cannot outlive the problem it describes. `reason` is mandatory and is what a reviewer reads; `decision` names what would let the entry be deleted. Adding an entry is a design decision, not a build fix — see AGENTS.md. Every entry below is decided rather than pending: what is written is the ruling, and the trigger that would reopen it.",
   "failures": [
-    {
-      "id": "text.tertiary/surface.muted",
-      "ratio": 4.32,
-      "min": 4.5,
-      "reason": "reported in the intake; awaiting the design decision",
-      "decision": "darken text.tertiary below #66737F, or forbid tertiary text on the muted surface in COMPONENTS.md"
-    },
-    {
-      "id": "text.tertiary/surface.page",
-      "ratio": 4.35,
-      "min": 4.5,
-      "reason": "reported in the intake; awaiting the design decision",
-      "decision": "same darkening as text.tertiary/surface.muted resolves this row too — the page's light end is 6 points lighter than the muted surface, not a separate problem"
-    },
-    {
-      "id": "text.tertiary/frost.200",
-      "ratio": 3.84,
-      "min": 4.5,
-      "reason": "reported in the intake; awaiting the design decision",
-      "decision": "the worst of the tertiary rows: the dark end of the page gradient. Either darken text.tertiary, or state that no tertiary text sits over the top-left of the gradient"
-    },
-    {
-      "id": "text.tertiary/surface.accent",
-      "ratio": 4.01,
-      "min": 4.5,
-      "reason": "reported in the intake; awaiting the design decision",
-      "decision": "darken text.tertiary, or use text.secondary for help text inside a cobalt.100 panel"
-    },
     {
       "id": "text.placeholder/surface.default",
       "ratio": 3.62,
       "min": 4.5,
-      "reason": "reported in the intake; awaiting the design decision",
-      "decision": "tokens.json already annotates text.placeholder as never-real-text. The row stays exempt only while every field carries a visible label above it (COMPONENTS.md, Text field); if a field ever ships placeholder-as-label, this becomes a hard failure"
+      "reason": "Exempt: a placeholder is never real text. It is a hint that disappears on the first keystroke and it never carries the field's name — every field carries a visible label above it (COMPONENTS.md, Text field: label 13/500 slate.900, above, 6 px gap), so nothing a user has to read depends on this ratio.",
+      "decision": "Decided, not pending: slate.500 stays the placeholder colour and this row stays exempt for exactly as long as the visible-label rule holds. If a field ever ships placeholder-as-label this becomes a hard failure, and the fix is the label, not the token. The other half of the rule is machine-guarded: forbidden:slate.500/surface.default fails the gate if slate.500 ever becomes usable as running text."
     },
     {
       "id": "text.placeholder/surface.muted",
       "ratio": 3.21,
       "min": 4.5,
-      "reason": "reported in the intake; awaiting the design decision",
-      "decision": "same as text.placeholder/surface.default, on the muted field variant"
+      "reason": "Exempt for the same reason as text.placeholder/surface.default, on the muted field variant (COMPONENTS.md, Text field suffix: muted block slate.100). A placeholder is never real text, and the field's name is on the visible label above it.",
+      "decision": "Decided, not pending: same ruling and the same trigger as text.placeholder/surface.default. Both surfaces stay listed so neither is forgotten when the rule is revisited."
     },
     {
       "id": "action.onPrimary/slate.300",
       "ratio": 1.52,
       "min": 4.5,
-      "reason": "reported in the intake; awaiting the design decision",
-      "decision": "the disabled primary button is white on slate.300. WCAG 1.4.3 exempts disabled controls, but 1.52:1 is unreadable rather than merely dimmed. Either darken the disabled fill or switch the disabled label to text.tertiary"
-    },
-    {
-      "id": "border.input/surface.default",
-      "ratio": 1.52,
-      "min": 3.0,
-      "reason": "reported in the intake; awaiting the design decision",
-      "decision": "1.4.11 requires 3:1 for the boundary of a control the user must find. slate.300 is decorative-strength. A darker input border is owed, or the field needs a filled ground so its extent is perceivable without the line"
+      "reason": "Exempt, and the pairing is retired: the disabled primary button keeps its slate.300 fill and its label changes from action.onPrimary to text.tertiary. White on slate.300 is 1.52:1, which is invisible rather than dimmed; tertiary ink on slate.300 is 3.87:1, legible while unmistakably inactive. WCAG 1.4.3 exempts disabled controls, so 4.5:1 was never the bar — being readable was.",
+      "decision": "Decided, not pending. It is not a token change because the disabled button's label colour is a component rule and v0.1 has no component tier: the grammar reserves `component` and it is empty (README, What v0.1 is not). The rule belongs in the COMPONENTS.md Button table, and the pairing becomes a token and a pair of its own when button.primary.disabled.label lands. This row stays measured so the white label cannot come back unnoticed."
     },
     {
       "id": "border.default/surface.default",
       "ratio": 1.32,
       "min": 3.0,
-      "reason": "reported in the intake; awaiting the design decision",
-      "decision": "the card edge is decorative — the card is also carried by shadow.card — so this row may end up annotated decorative-only rather than darkened. It is listed rather than deleted so the decision is recorded"
-    },
-    {
-      "id": "focus-ring/surface.default",
-      "ratio": 1.78,
-      "min": 3.0,
-      "reason": "reported in the intake; awaiting the design decision",
-      "decision": "the ring is cobalt.500 at 35 % alpha, which composites to #B5C0F2 on white. The focus indicator is the one thing a keyboard user has; 1.78:1 does not satisfy 1.4.11. Raise the alpha to opaque cobalt, or ship a two-tone ring with an opaque inner edge"
-    },
-    {
-      "id": "focus-ring/surface.page",
-      "ratio": 1.74,
-      "min": 3.0,
-      "reason": "reported in the intake; awaiting the design decision",
-      "decision": "same ring, measured on the page rather than on a card. Whatever fixes focus-ring/surface.default fixes this; both rows stay so neither surface is forgotten"
+      "reason": "Exempt, decorative only: the card's extent is carried by shadow.card (0 8px 24px -16px rgba(47,58,69,.25)), not by the 1 px slate.200 line. SC 1.4.11 applies to a boundary that is the only way to perceive a component; this one is not, and darkening it to 3:1 would put a mid-grey rule around every white card floating on the frost page.",
+      "decision": "Decided, not pending: the card border stays slate.200 and this row is the written record of that. It becomes a hard failure the day a card ships without shadow.card, because then the line is the only boundary there is. border.input took the opposite ruling in the same pass — a control the user has to find is not decorative — which is why the two rows part company here."
     }
   ]
 }

@@ -132,8 +132,12 @@ export function toHex({ r, g, b }) {
 
 /**
  * Flatten a translucent colour onto an opaque one.
- * An `rgba()` token measured as if it were opaque reports a ratio no user ever
- * sees, which is exactly how a 1.78:1 focus ring gets recorded as passing.
+ * Every foreground the contrast gate measures goes through here, because a
+ * translucent colour read as if it were opaque reports a ratio no user ever
+ * sees: the focus ring's 35 % halo reads as 6.70:1 opaque cobalt and paints
+ * #B5C0F2 at 1.78:1 on white. This function has no output of its own — nothing
+ * in dist/ moves when it is wrong — so the numbers it must produce are pinned
+ * in test/color-math.selftest.mjs.
  */
 export function composite(fg, bg) {
   const a = fg.a ?? 1;
