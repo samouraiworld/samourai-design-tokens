@@ -29,7 +29,11 @@
 //     the line above, applied while the pair is still failing: an entry stops
 //     covering a pair the moment the pair stops being the one it describes, and
 //     an entry whose pair clears its minimum is deleted rather than re-measured.
-//     test/check-contrast.selftest.mjs proves each of those failures still fires.
+//     A minimum loosened far enough for the pair to clear it lands there too,
+//     reported as an entry to delete rather than as a loosened bound; the split
+//     is at the minimum, so only one of the two ever fires on a row.
+//     test/check-contrast.selftest.mjs proves each of those failures still
+//     fires, on a row addressed by a token path and on one addressed by a role.
 
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
