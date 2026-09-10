@@ -2,7 +2,7 @@
 // Contrast gate — WCAG 2.1 relative luminance, the same maths as
 // samourai-visio/scripts/check-contrast.py, run over contrast-pairs.json.
 //
-// The four ways a contrast suite lies, and what stops each here:
+// The five ways a contrast suite lies, and what stops each here:
 //
 //   A translucent colour is measured as if it were opaque.  Every foreground
 //     is composited onto its background before it is measured, at whatever
@@ -21,6 +21,33 @@
 //   A failure is "temporarily" tolerated and nobody remembers.  A failing pair
 //     must be listed in contrast-known-failures.json with a written reason, and
 //     an entry whose pair now passes fails the gate so the file cannot rot.
+//   An excuse outlives the pair it was written for.  Each allowlist entry is
+//     bound to the pair's `fg`, `bg` and `min`, and to the ratio it was written
+//     at. A pair re-pointed at other tokens or at another `spec:` role, a
+//     loosened minimum, or a colour that moved in either direction since the
+//     ruling fails the gate instead of quietly inheriting the old reason. That
+//     is the same rule as the line above, applied while the pair is still
+//     failing: an entry stops covering a pair the moment the pair stops being
+//     the one it describes, and an entry whose pair clears its minimum is
+//     deleted rather than re-measured. A minimum loosened far enough for the
+//     pair to clear it lands there too, reported as an entry to delete rather
+//     than as a loosened bound; the split is at the minimum, so only one of the
+//     two ever fires on a row.
+//     test/check-contrast.selftest.mjs mutates one of them per test and asserts
+//     the note the gate prints, not the exit code. On a row addressed by a
+//     token path it covers every one: the `fg` binding, the `bg` binding, a
+//     loosened minimum, drift in either direction, a missing `reason`, a
+//     missing `decision`, and both routes to a pair that clears — a colour that
+//     improved, and a minimum loosened far enough. Those last two run on an
+//     exempt row, the half of that branch under which a stale entry looks
+//     harmless; `exempt` picks the verdict label there and nothing else. On a
+//     row addressed by a `spec:` role it covers the seam the roles opened: the
+//     `fg` binding, against the literal the role paints and against another
+//     role, and drift in either direction. The `bg` binding, the minimum and
+//     the missing `reason` and `decision` are not repeated there — each
+//     compares two fields of the row without reading the composed colour, so a
+//     role-addressed copy would re-run the token-path test over the same lines
+//     of the gate.
 
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
@@ -35,6 +62,52 @@ const { pairs } = JSON.parse(readFileSync(join(ROOT, 'contrast-pairs.json'), 'ut
 const allowFile = join(ROOT, 'contrast-known-failures.json');
 const allowlist = existsSync(allowFile) ? JSON.parse(readFileSync(allowFile, 'utf8')) : { failures: [] };
 const allowed = new Map(allowlist.failures.map((f) => [f.id, { ...f, used: false }]));
+
+/** How far a measured ratio may drift from the one an entry was written at. */
+const RATIO_SLACK = 0.05;
+
+/**
+ * Why an allowlist entry does not cover the pair it names, or null when it
+ * does. Every field an entry carries is checked, so the entry describes the
+ * pair as measured today, not the pair as it was when someone wrote the excuse.
+ *
+ * Reached only for a pair that is still below its minimum. A pair that has
+ * started passing is refused earlier, by the rule that an entry cannot outlive
+ * the problem it describes; the two are one rule split at the minimum, not two
+ * verdicts on the same row. `fgAlpha` is not among the fields checked because
+ * no row carries one: compositing is unconditional and the alpha travels with
+ * the colour (ADR-0002), so an entry has nothing to be bound to there.
+ */
+function bindingProblem(excuse, pair, ratio) {
+  if (!excuse.reason || !excuse.reason.trim()) return 'contrast-known-failures.json entry has no reason';
+  if (!excuse.decision || !excuse.decision.trim()) return 'contrast-known-failures.json entry has no decision';
+  for (const key of ['fg', 'bg']) {
+    if ((excuse[key] ?? null) !== (pair[key] ?? null)) {
+      return (
+        `contrast-known-failures.json entry was written for ${key} ${JSON.stringify(excuse[key] ?? null)} ` +
+        `but the pair now measures ${key} ${JSON.stringify(pair[key] ?? null)} — a different pair, not the one excused`
+      );
+    }
+  }
+  if (excuse.min !== pair.min) {
+    return `contrast-known-failures.json entry was written for min ${excuse.min}, the pair now requires ${pair.min}`;
+  }
+  if (typeof excuse.ratio !== 'number') return 'contrast-known-failures.json entry records no ratio';
+  if (ratio < excuse.ratio - RATIO_SLACK) {
+    return (
+      `measures ${ratio.toFixed(2)}, worse than the ${excuse.ratio.toFixed(2)} the entry was written for — ` +
+      'the colour moved under the excuse; decide the new value, do not inherit the old reason'
+    );
+  }
+  if (ratio > excuse.ratio + RATIO_SLACK) {
+    return (
+      `measures ${ratio.toFixed(2)}, not the ${excuse.ratio.toFixed(2)} the entry was written for — ` +
+      'the colour moved; re-read the ruling and record the ratio it now covers. Once it clears the ' +
+      'minimum the entry is deleted, not re-measured'
+    );
+  }
+  return null;
+}
 
 /** A `spec:` role, a token path, or a literal colour, resolved to `{r, g, b, a}`. */
 function colorOf(ref) {
@@ -119,9 +192,10 @@ for (const pair of pairs) {
   }
 
   excuse.used = true;
-  if (!excuse.reason || !excuse.reason.trim()) {
+  const problem = bindingProblem(excuse, pair, row.ratio);
+  if (problem) {
     row.verdict = 'FAIL';
-    row.note = 'contrast-known-failures.json entry has no reason';
+    row.note = problem;
     hardFailures++;
   } else {
     row.verdict = pair.exempt ? 'EXEMPT' : 'ALLOWED';
