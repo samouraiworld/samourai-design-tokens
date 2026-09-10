@@ -50,6 +50,10 @@ Four jobs, in `.github/workflows/ci.yml`. Three do work: **Grammar, contrast, dr
 
 Before it decides anything, `ci-ok` proves both of its scripts can still fail — `aggregate-result.selftest.sh` and `check-aggregate-covers-jobs.selftest.sh` — and then runs both: `check-aggregate-covers-jobs.py`, which fails if a job exists in `ci.yml` but is missing from `ci-ok`'s `needs:` (such a gate could go red while the required check stayed green), and `aggregate-result.py`, which reads the verdicts. A required check nobody has ever seen fail is a decoration, and this one is the last thing standing between a red gate and a green merge button.
 
+## Releasing
+
+A tag is the release: there is no registry and the package is `private: true`. The procedure — gates green on `main`, `dist/` drift-clean, the contrast register read, the decider of every value change named, an annotated `vX.Y.Z` tag, then one repin pull request per consumer — is in [`RELEASE.md`](RELEASE.md). What each tag carries is in [`CHANGELOG.md`](CHANGELOG.md).
+
 ## How the hub and the console consume it
 
 Until GitHub Packages is set up for the organisation, both repositories take a **git dependency pinned to a tag**. A branch or a bare repository URL is not pinned: it re-resolves on every fresh install, and the palette changes underneath the consumer between two CI runs of the same commit.
