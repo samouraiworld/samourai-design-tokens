@@ -92,6 +92,7 @@ export default {
         "8": "32px",
         "10": "40px",
         "12": "48px",
+        "control-selection-ring-width": "5px",
       },
       fontFamily: {
         sans: ["Plus Jakarta Sans", "system-ui", "-apple-system", "Segoe UI", "sans-serif"],
@@ -144,6 +145,7 @@ export default {
       },
       ringWidth: {
         DEFAULT: "3px",
+        "control-selection": "5px",
       },
       transitionTimingFunction: {
         out: "cubic-bezier(0.2, 0.7, 0.3, 1)",
