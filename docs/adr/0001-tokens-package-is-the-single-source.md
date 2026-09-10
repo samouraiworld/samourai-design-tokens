@@ -1,6 +1,7 @@
 # ADR-0001: This package is the single source of design values, and its build output is committed
 
 **Status:** Proposed
+**Amended by:** [ADR-0002](0002-decided-values-move-and-spec-constants-are-measured.md) — points 1 and 2; points 3, 4 and 5 stand
 **Deciders:** the crew
 
 ## Context

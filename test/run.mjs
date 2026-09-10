@@ -4,7 +4,8 @@
 //   grammar   tokens.json is valid DTCG and follows the naming grammar
 //   contrast  every declared pair clears its minimum or carries a reason
 //   drift     dist/ is exactly what tokens.json generates
-//   units     the token-resolution guard, CSS parity with the design drop, and
+//   units     the token-resolution guard, CSS parity with the design drop, the
+//             colour maths the contrast gate rests on, the control rings, and
 //             the contrast gate's own self-test (each way it must fail, fails)
 //
 // Every gate runs even when an earlier one fails, so one command tells you
@@ -20,7 +21,18 @@ const gates = [
   ['grammar', ['scripts/check-grammar.mjs']],
   ['contrast', ['scripts/check-contrast.mjs']],
   ['drift', ['scripts/build.mjs', '--check']],
-  ['units', ['--test', '--test-reporter=spec', 'test/token-test.selftest.mjs', 'test/css-parity.selftest.mjs', 'test/check-contrast.selftest.mjs']],
+  [
+    'units',
+    [
+      '--test',
+      '--test-reporter=spec',
+      'test/token-test.selftest.mjs',
+      'test/css-parity.selftest.mjs',
+      'test/color-math.selftest.mjs',
+      'test/control-selection-ring.selftest.mjs',
+      'test/check-contrast.selftest.mjs',
+    ],
+  ],
 ];
 
 const failed = [];

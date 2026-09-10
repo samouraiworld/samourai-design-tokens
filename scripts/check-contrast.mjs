@@ -2,26 +2,39 @@
 // Contrast gate — WCAG 2.1 relative luminance, the same maths as
 // samourai-visio/scripts/check-contrast.py, run over contrast-pairs.json.
 //
-// The three ways a contrast suite lies, and what stops each here:
+// The five ways a contrast suite lies, and what stops each here:
 //
-//   A translucent colour is measured as if it were opaque.  `fgAlpha`
-//     composites the foreground onto the background first, so the ring that
-//     users actually see at 1.78:1 is not recorded as 6.30:1.
+//   A translucent colour is measured as if it were opaque.  Every foreground
+//     is composited onto its background before it is measured, at whatever
+//     alpha the colour itself carries. There is no per-row field to omit and
+//     no branch to skip: the focus ring's halo reports 6.70:1 read as opaque
+//     cobalt and the 1.78:1 it actually paints once composited, and that
+//     difference is the whole distance between an indicator that satisfies
+//     SC 1.4.11 and one that only says it does.
+//   A colour the build composes is not measured at all.  A `spec:` reference
+//     reads the ring out of scripts/lib/spec.mjs by role — the tone against
+//     the control, the tone against the background — so these rows measure the
+//     ring that ships. A geometry change moves the rows with it; it cannot
+//     leave them describing a ring that is no longer there. ADR-0002.
 //   A renamed token silently empties the suite.  An unresolvable pair is a
 //     hard FAIL, never a skipped row.
 //   A failure is "temporarily" tolerated and nobody remembers.  A failing pair
 //     must be listed in contrast-known-failures.json with a written reason, and
 //     an entry whose pair now passes fails the gate so the file cannot rot.
 //   An excuse outlives the pair it was written for.  Each allowlist entry is
-//     bound to the pair's `fg`, `bg`, `fgAlpha` and `min`, and to the ratio it
-//     was written at. A pair re-pointed at other tokens, a loosened minimum, or
-//     a colour that moved since the ruling fails the gate instead of quietly
-//     inheriting the old reason. test/check-contrast.selftest.mjs proves each
-//     of those failures still fires.
+//     bound to the pair's `fg`, `bg` and `min`, and to the ratio it was written
+//     at. A pair re-pointed at other tokens or at another `spec:` role, a
+//     loosened minimum, or a colour that moved since the ruling fails the gate
+//     instead of quietly inheriting the old reason. That is the same rule as
+//     the line above, applied while the pair is still failing: an entry stops
+//     covering a pair the moment the pair stops being the one it describes, and
+//     an entry whose pair clears its minimum is deleted rather than re-measured.
+//     test/check-contrast.selftest.mjs proves each of those failures still fires.
 
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { ROOT, loadTokens, indexTokens, resolve, parseColor, composite, contrastRatio, toHex } from './lib/tokens.mjs';
+import { SPEC_COLORS } from './lib/spec.mjs';
 
 const tree = loadTokens();
 const index = indexTokens(tree);
@@ -39,11 +52,18 @@ const RATIO_SLACK = 0.05;
  * Why an allowlist entry does not cover the pair it names, or null when it
  * does. Every field an entry carries is checked, so the entry describes the
  * pair as measured today, not the pair as it was when someone wrote the excuse.
+ *
+ * Reached only for a pair that is still below its minimum. A pair that has
+ * started passing is refused earlier, by the rule that an entry cannot outlive
+ * the problem it describes; the two are one rule split at the minimum, not two
+ * verdicts on the same row. `fgAlpha` is not among the fields checked because
+ * no row carries one: compositing is unconditional and the alpha travels with
+ * the colour (ADR-0002), so an entry has nothing to be bound to there.
  */
 function bindingProblem(excuse, pair, ratio) {
   if (!excuse.reason || !excuse.reason.trim()) return 'contrast-known-failures.json entry has no reason';
   if (!excuse.decision || !excuse.decision.trim()) return 'contrast-known-failures.json entry has no decision';
-  for (const key of ['fg', 'bg', 'fgAlpha']) {
+  for (const key of ['fg', 'bg']) {
     if ((excuse[key] ?? null) !== (pair[key] ?? null)) {
       return (
         `contrast-known-failures.json entry was written for ${key} ${JSON.stringify(excuse[key] ?? null)} ` +
@@ -64,14 +84,22 @@ function bindingProblem(excuse, pair, ratio) {
   if (ratio > excuse.ratio + RATIO_SLACK) {
     return (
       `measures ${ratio.toFixed(2)}, not the ${excuse.ratio.toFixed(2)} the entry was written for — ` +
-      'the colour moved; re-read the ruling and record the ratio it now covers'
+      'the colour moved; re-read the ruling and record the ratio it now covers. Once it clears the ' +
+      'minimum the entry is deleted, not re-measured'
     );
   }
   return null;
 }
 
-/** A token path or a literal colour, resolved to `{r, g, b, a}`. */
+/** A `spec:` role, a token path, or a literal colour, resolved to `{r, g, b, a}`. */
 function colorOf(ref) {
+  if (typeof ref === 'string' && ref.startsWith('spec:')) {
+    const role = SPEC_COLORS[ref];
+    // Not a fall-through to token resolution: a misspelt role that quietly
+    // became a dangling token path would read as the wrong kind of mistake.
+    if (!role) throw new Error(`unknown spec reference "${ref}" — the roles are ${Object.keys(SPEC_COLORS).join(', ')}`);
+    return role(index);
+  }
   if (typeof ref === 'string' && (ref.startsWith('#') || ref.startsWith('rgb'))) return parseColor(ref);
   return parseColor(resolve(ref, index));
 }
@@ -84,9 +112,14 @@ for (const pair of pairs) {
 
   try {
     const bg = colorOf(pair.bg);
-    let fg = colorOf(pair.fg);
-    if (pair.fgAlpha !== undefined) fg = composite({ ...fg, a: pair.fgAlpha }, bg);
-    else fg = composite(fg, bg);
+    // A translucent background would be measured as the colour behind it and
+    // nothing would say so — the same silence this gate exists to break.
+    if ((bg.a ?? 1) < 1) {
+      throw new Error(`background "${pair.bg}" is translucent; a row measures against what is actually painted there`);
+    }
+    // Unconditional. A row cannot opt out of compositing, because the one that
+    // did is how a 1.78:1 focus ring passed at 6.70:1.
+    const fg = composite(colorOf(pair.fg), bg);
     row.fgHex = toHex(fg);
     row.bgHex = toHex(bg);
     row.ratio = contrastRatio(fg, bg);

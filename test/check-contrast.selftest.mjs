@@ -78,10 +78,19 @@ test('an untouched copy of the gate and its inputs passes', () => {
   }
 });
 
-// The first allowlisted text row, whichever it is on this branch: the tests
-// below need a pair that fails its minimum and carries an excuse, not a
-// specific colour.
-const SUBJECT = () => readJson(ROOT, 'contrast-known-failures.json').failures[0].id;
+// The first allowlisted row, whichever it is on this branch: the tests below
+// need a pair that fails its minimum and carries an excuse, not a specific
+// colour. It has to be addressed by token path, because two of the mutations
+// below move the colour itself; a `spec:` row's colour is composed in
+// scripts/lib/spec.mjs and there is no token to edit.
+const SUBJECT = () => {
+  const entry = readJson(ROOT, 'contrast-known-failures.json').failures[0];
+  assert.ok(
+    !String(entry.fg).startsWith('spec:'),
+    `${entry.id} is allowlisted by a spec: role; these mutations edit tokens.json and cannot move it`,
+  );
+  return entry.id;
+};
 
 assertFailsFor(
   'a pair re-pointed at a different background keeps its id but loses its excuse',
@@ -123,15 +132,16 @@ assertFailsFor(
   (dir) => {
     const { pair } = excusedPair(dir, SUBJECT());
     // Push the foreground towards the background: same pair, worse ratio.
+    //
+    // The literal lands on the pair's OWN token, not on the ramp step it
+    // aliases. Following the alias would move a shared primitive — the
+    // placeholder ink and `semantic.border.input` are both `color.slate.500`
+    // since ADR-0002 — and drag an unrelated gated row below its minimum, so
+    // the gate would go red partly for a reason this test is not about.
     const tokens = readJson(dir, 'tokens.json');
     const path = pair.fg.split('.');
     let node = tokens;
     for (const key of path) node = node[key];
-    const value = node.$value;
-    if (typeof value === 'string' && value.startsWith('{')) {
-      node = tokens;
-      for (const key of value.slice(1, -1).split('.')) node = node[key];
-    }
     node.$value = '#B0B8C0';
     writeJson(dir, 'tokens.json', tokens);
   },
