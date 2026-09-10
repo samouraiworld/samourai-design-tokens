@@ -6,7 +6,7 @@ No tag exists yet. `package.json` reads `0.1.0`, and the first tag will be `v0.1
 
 ## Unreleased
 
-Everything below comes from the pull request on `feat/complete-shell-theme-tokens`.
+Everything below comes from the pull request on `feat/complete-shell-theme-tokens`. What reached `main` before this branch merged it — the selected-control ring token and the ADR-0002 palette move — is recorded in `docs/specs/control-selection-ring.md` and `docs/adr/0002-decided-values-move-and-spec-constants-are-measured.md`, and is not repeated here.
 
 ### Added
 

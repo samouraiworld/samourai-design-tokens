@@ -19,9 +19,9 @@ import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { ROOT, RESERVED, loadTokens, walkTokens, aliasTarget, indexTokens, resolve } from './lib/tokens.mjs';
 
-// Closed list, per DESIGN_HANDOFF A3. `component` is reserved for the third
-// tier (ADR-0004) and is empty in v0.1 — declared here so the first component
-// token does not arrive as a grammar failure.
+// Closed list, per DESIGN_HANDOFF A3. `component` is the third tier (ADR-0004).
+// It was empty until the shell geometry aliases landed; it is declared here so
+// a component token does not arrive as a grammar failure.
 const ROOT_GROUPS = new Set([
   'color',
   'semantic',
@@ -159,7 +159,10 @@ console.log('Token grammar — tokens.json');
 console.log('─'.repeat(72));
 console.log(`  primitive  ${String(counts.primitive).padStart(4)}`);
 console.log(`  semantic   ${String(counts.semantic).padStart(4)}`);
-console.log(`  component  ${String(counts.component).padStart(4)}   (tier reserved by ADR-0004, empty in v0.1)`);
+console.log(
+  `  component  ${String(counts.component).padStart(4)}   ` +
+    (counts.component === 0 ? '(tier reserved by ADR-0004, still empty)' : '(third tier, ADR-0004)'),
+);
 if (counts.unknown) console.log(`  unknown    ${String(counts.unknown).padStart(4)}`);
 console.log(`  ${'total'.padEnd(10)} ${String(tokens.length).padStart(4)}   in ${groupsSeen.length} groups`);
 console.log('');

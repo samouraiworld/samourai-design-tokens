@@ -17,6 +17,7 @@
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { ROOT, loadTokens, walkTokens, indexTokens, resolve, resolveValue, parseColor, aliasTarget } from './lib/tokens.mjs';
+import { SPEC, focusRingLayers, focusRingIndicator } from './lib/spec.mjs';
 
 const DIST = join(ROOT, 'dist');
 const CHECK = process.argv.includes('--check');
@@ -45,16 +46,12 @@ const flat = (path) => {
 };
 
 // --- Spec constants ---------------------------------------------------------
-// Values the design system fixes but tokens.json v0.1 does not yet carry as
-// tokens. Each is asserted against a token it derives from, so a palette change
+// The page gradient and the focus ring are fixed by the design system and are
+// not tokens in v0.1. They live in scripts/lib/spec.mjs because the contrast
+// gate reads them too: a geometry only the build knows is a geometry no check
+// can measure. Each is anchored to a token it derives from, so a palette change
 // flows through and a token rename fails the build rather than the browser.
-const SPEC = {
-  // DESIGN_SYSTEM.md §2: "frost gradient 115deg #DCE6F0 → #EEF3F8 (45%) → #FFFFFF".
-  pageGradient: { angle: '115deg', stops: [['color.frost.200', '0%'], ['color.frost.100', '45%'], ['color.white', '100%']] },
-  // COMPONENTS.md: "Focus ring: 0 0 0 3px rgba(43,75,219,.35) on every
-  // interactive element" — the action colour at 35 %.
-  focusRing: { width: '3px', source: 'semantic.action.primary', alpha: 0.35 },
-};
+// ADR-0002.
 
 // --- Path → CSS custom property --------------------------------------------
 const kebab = (s) => s.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
@@ -160,6 +157,11 @@ function rgba(hex, alpha) {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
+/** A focus-ring layer as CSS: the token's own hex when opaque, `rgba()` when not. */
+function tone(layer) {
+  return layer.alpha === 1 ? layer.literal : rgba(layer.literal, layer.alpha);
+}
+
 // --- dist/tokens.css --------------------------------------------------------
 const HEADER = `/* GENERATED FILE — DO NOT EDIT.
    Written by scripts/build.mjs from tokens.json, which is the source of truth.
@@ -181,7 +183,9 @@ function buildCss() {
     .map(([path, stop]) => `var(--${cssName(path)}) ${stop}`)
     .join(', ')})`;
 
-  const focus = `0 0 0 ${SPEC.focusRing.width} ${rgba(flat(SPEC.focusRing.source), SPEC.focusRing.alpha)}`;
+  // One box-shadow per tone, in the order lib/spec.mjs lists them: innermost
+  // first, which is the order box-shadow paints on top in.
+  const focus = focusRingLayers(index).map((layer) => `0 0 0 ${layer.width} ${tone(layer)}`).join(', ');
 
   const sections = [
     ['primitives — colour', pick('color').map(declare)],
@@ -195,6 +199,7 @@ function buildCss() {
     ],
     ['semantic — text', pick('semantic.text').map(declare)],
     ['semantic — actions', [...pick('semantic.action').map(declare), `  --focus-ring: ${focus};`]],
+    ['semantic — controls', pick('semantic.control').map(declare)],
     ['type', pick('font').map(declare)],
     ['space (4px base)', pick('space').map(declare)],
     ['radius', pick('radius').map(declare)],
@@ -280,9 +285,16 @@ function buildPreset() {
     if (THEMES.some((name) => key === `theme-${name}`)) continue;
     colors[key] = '$value' in child ? flat(`color.${key}`) : scaleObject(`color.${key}`);
   }
-  for (const t of pick('semantic').filter((t) => !t.path.startsWith('semantic.theme.') && !t.path.startsWith('semantic.layout.'))) {
-    colors[mechanicalName(t.path)] = flat(t.path);
-  }
+  // Both filters, and both are load-bearing. `type === 'color'` keeps the
+  // non-colour semantics out of the colour map — the selected-control ring
+  // width is a dimension and belongs to ringWidth below. The theme and layout
+  // groups are excluded on top of that: their colours are real colours, but
+  // they are scoped per theme and reach consumers as the `c-*` entries added
+  // after this loop, never as one flat value that would freeze the light theme.
+  const flatSemantic = pick('semantic').filter(
+    (t) => t.type === 'color' && !t.path.startsWith('semantic.theme.') && !t.path.startsWith('semantic.layout.'),
+  );
+  for (const t of flatSemantic) colors[mechanicalName(t.path)] = flat(t.path);
   for (const [nick, path] of Object.entries(PRESET_NICKNAMES)) colors[nick] = flat(path);
   for (const role of themeRoles) {
     if (byPath.get(`semantic.theme.light.${role}`).type === 'color') colors[`c-${role}`] = `var(--c-${role})`;
@@ -314,8 +326,16 @@ function buildPreset() {
     borderRadius: withDefaults('borderRadius', scaleObject('radius')),
     boxShadow: shadows,
     backgroundImage: { frost: gradient, 'c-page-gradient': 'var(--c-page-grad)' },
-    ringColor: { DEFAULT: rgba(flat(SPEC.focusRing.source), SPEC.focusRing.alpha) },
-    ringWidth: { DEFAULT: SPEC.focusRing.width },
+    // Tailwind's ring utility is single-tone, so it carries the indicator —
+    // the tone SC 1.4.11 measures. The full two-tone ring is on --focus-ring.
+    // `control-selection` is the selected-control ring, a different indicator
+    // with its own token; it must never be the width the bare `ring` utility
+    // gets, or the two states render identically.
+    ringColor: { DEFAULT: tone(focusRingIndicator(index)) },
+    ringWidth: {
+      DEFAULT: focusRingIndicator(index).width,
+      'control-selection': flat('semantic.control.selection-ring-width'),
+    },
     transitionTimingFunction: Object.fromEntries(
       pick('motion.easing').map((t) => [t.path.slice('motion.easing.'.length), cssValue(t)]),
     ),

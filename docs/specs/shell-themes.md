@@ -1,6 +1,6 @@
 # Shell theme contract
 
-Status: Implementation specification; reference values fixed, and the four observed low-contrast uses resolved by three approved decisions recorded below. Every declared normative pair clears its minimum without a waiver.
+Status: Implementation specification; reference values fixed, and the four observed low-contrast uses resolved by three approved decisions recorded below. Every normative pair this spec declares clears its minimum without a waiver.
 
 Provide complete light, dark and black semantic maps for the collaborative shell. Preserve the existing token paths, CSS declarations and static preset keys. The new API is opt-in: `--c-*` custom properties and matching `c-*` Tailwind colors follow `[data-theme]`; the unthemed default is light. Nested theme boundaries must redeclare every role. Theme selection, persistence and system preference belong to the consumer.
 
@@ -18,7 +18,7 @@ Import the generated CSS once. Place `data-theme="light"`, `data-theme="dark"` o
 
 Two usages are decided, not free: the selected room row draws its icon in `c-ink-3` (unselected rows keep `c-ink-4`), and the connected-room indicator on the inverse panel uses `c-ok-on-dark`, not `c-ok`. The register measures those usages; a consumer that renders the reference roles instead re-creates a failure the gate no longer sees.
 
-Existing static keys such as `text-ink` do not acquire a new theme automatically. Migrating a component to `c-*` requires auditing all its surfaces, text, statuses and focus indication together. The existing focus tokens retain their earlier contrast decisions; this package does not certify a consumer by changing its theme attribute.
+Existing static keys such as `text-ink` do not acquire a new theme automatically. Migrating a component to `c-*` requires auditing all its surfaces, text, statuses and focus indication together. Focus indication is decided outside this spec and moved with ADR-0002: the ring is two-tone, an opaque core inside the delivered 35 % halo, and the selected-control ring carries its own width token. This spec changes neither, measures neither against a themed surface, and this package does not certify a consumer by changing its theme attribute.
 
 ## Decided observed combinations
 
