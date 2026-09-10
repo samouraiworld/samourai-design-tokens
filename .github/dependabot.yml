@@ -32,7 +32,18 @@ updates:
     # is lost in the pile.
     groups:
       actions:
+        # Capped on purpose. `patterns: ['*']` with no `update-types` collects
+        # majors into the weekly bundle: a sibling repository's actions group
+        # arrived as a single pull request carrying three actions across six
+        # major steps, under a header promising that a major is never merged as
+        # opened. The configuration was manufacturing the thing it forbids.
+        #
+        # A cap is not an `ignore`. Dependabot still opens the major; it opens
+        # it on its own, outside the group, which is the signal this file asks
+        # for. Measured in this organisation: a capped npm group still produced
+        # its major as an individual pull request rather than suppressing it.
         patterns: ['*']
+        update-types: ['minor', 'patch']
 
 # NOT covered by anything above: the gitleaks and actionlint versions in
 # .github/workflows/ci.yml. They are pinned as env vars and downloaded as
