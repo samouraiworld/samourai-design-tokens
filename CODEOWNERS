@@ -6,18 +6,28 @@
 # Two owners on every line, never one. A sole owner who is also the author
 # cannot be reviewed at all: GitHub refuses self-approval, so the code-owner
 # rule blocks forever instead of ever being satisfied.
+#
+# `@samouraiworld/reviewers` widens that beyond two: any member of the team
+# satisfies the rule, so the approver pool grows by a team membership change
+# rather than by a pull request in every repository.
+#
+# A name here only counts if it holds write access on this repository. Without
+# it GitHub ignores the entry silently -- no error on the pull request, no
+# failing check, the review simply never counts, and the file reads as a wider
+# pool than it is. `gh api repos/samouraiworld/<repo>/codeowners/errors` is what
+# reports it; a green pull request does not.
 
-*                       @zxxma @louis14448
+*                       @zxxma @louis14448 @samouraiworld/reviewers
 
 # The source of truth. A value changed here repaints both front-ends at once,
 # and the contrast gate is the only thing standing between a hex edit and an
 # unreadable screen.
-/tokens.json            @zxxma @louis14448
-/contrast-pairs.json    @zxxma @louis14448
-/contrast-known-failures.json @zxxma @louis14448
+/tokens.json            @zxxma @louis14448 @samouraiworld/reviewers
+/contrast-pairs.json    @zxxma @louis14448 @samouraiworld/reviewers
+/contrast-known-failures.json @zxxma @louis14448 @samouraiworld/reviewers
 
 # A workflow change can disable a gate without failing anything: CI goes green
 # because the step that would have failed no longer runs.
-/.github/workflows/     @zxxma @louis14448
-/AGENTS.md              @zxxma @louis14448
-/docs/adr/              @zxxma @louis14448
+/.github/workflows/     @zxxma @louis14448 @samouraiworld/reviewers
+/AGENTS.md              @zxxma @louis14448 @samouraiworld/reviewers
+/docs/adr/              @zxxma @louis14448 @samouraiworld/reviewers
