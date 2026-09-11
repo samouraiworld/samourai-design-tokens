@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # Prove check-tracked-dot-entries.sh can fail, and fail for the reason it says.
 #
-# Each case asserts the MESSAGE, not the exit code. Exit 1 is also what a typo
-# in the script produces, so a self-test reading only the status stays green
-# after the check has quietly stopped checking.
+# Each case asserts the MESSAGE as well as a non-zero exit. The message because
+# exit 1 is also what a typo in the script produces, so a self-test reading only
+# the status stays green after the check has quietly stopped checking; the status
+# because that one bit is the whole of what CI consumes.
 #
 # The cases build throwaway repositories and stage files into them. Staging is
 # enough -- `git ls-files` reads the index -- so nothing here commits.
@@ -114,6 +115,31 @@ expect_fail_saying "$d" "cannot read the allowlist" IGNORE=1
 # Distinct from missing, and the likelier accident: a bad edit truncates it.
 d=$(scaffold emptied "# only a comment")
 expect_fail_saying "$d" "declares no entries" IGNORE=1
+
+# --- case 6b: a non-ASCII filename beneath a root dot-directory ---------------
+# `git ls-files` QUOTES any path holding a non-ASCII byte, and the quote prefixes
+# the FIRST component -- so `^\.` stopped matching and the check reported a clean
+# scan of the very thing it exists to catch. ONE accented filename anywhere
+# beneath a root dot-entry was enough to hide the whole directory.
+d=$(scaffold nonascii .github .gitignore)
+mkdir -p "$d/.sometool"; : > "$d/.sometool/naïve-cache.json"
+git -C "$d" add -A >/dev/null 2>&1
+expect_fail_saying "$d" "tracked dot-entry not on the allowlist" IGNORE=1
+out=$(cd "$d" && bash "$check" 2>&1)
+if grep -qF ".sometool" <<<"$out"; then
+  ok "a root dot-entry is still named when a file beneath it is non-ASCII"
+else
+  echo "FAIL: a non-ASCII path hid the offending entry"; fails=$((fails+1))
+fi
+
+# --- case 6c: an embedded newline in a filename -------------------------------
+# A separate failure mode, not a variant of the one above: git quotes control
+# characters whatever `core.quotePath` says, so the one-line fix for the accent
+# does not fix this. A fixture per failure mode, not one representative.
+d=$(scaffold newline .github .gitignore)
+mkdir -p "$d/.sometool"; : > "$d/.sometool/new"$'\n'"line.json"
+git -C "$d" add -A >/dev/null 2>&1
+expect_fail_saying "$d" "tracked dot-entry not on the allowlist" IGNORE=1
 
 # --- case 7: the real repository is accepted ---------------------------------
 # A check that refuses everything is not a check.

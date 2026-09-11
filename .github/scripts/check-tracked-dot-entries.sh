@@ -35,7 +35,12 @@ if [ "${#allowed[@]}" -eq 0 ]; then
   exit 1
 fi
 
-files=$(git ls-files)
+# -z, because `git ls-files` QUOTES any path holding a non-ASCII or control byte
+# and the quote prefixes the FIRST component -- so a root-level dot-entry stopped
+# matching `^\.` the moment any file beneath it had an accent in its name, and the
+# check reported a clean scan. That is the exact case this exists to catch.
+# `core.quotePath=false` fixes the accent but NOT an embedded newline; -z fixes both.
+files=$(git ls-files -z | tr '\0' '\n')
 if [ -z "$files" ]; then
   echo "check-tracked-dot-entries: git ls-files reported no tracked files at all. Refusing rather than reporting a clean scan of nothing." >&2
   exit 1

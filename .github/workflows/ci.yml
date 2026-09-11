@@ -247,8 +247,7 @@ jobs:
     name: ci-ok
     runs-on: ubuntu-latest
     if: always()
-    needs: [attribution, gates, secret-scan, workflows]
-    needs: [dot-entries, gates, secret-scan, workflows]
+    needs: [attribution, gates, secret-scan, workflows, dot-entries]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Prove this gate can fail
