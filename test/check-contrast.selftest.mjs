@@ -219,18 +219,19 @@ assertFailsFor(
 // same bar as the untouched tree, so each mutation after it is still the only
 // thing wrong when the gate goes red.
 const ROLE_SUBJECT = 'focus-ring/surface.default';
-const ROLE_SUBJECT_FG = 'spec:focus-ring.indicator';
+const ROLE_SUBJECT_FG = 'spec:focus-ring.light.indicator';
 const ROLE_SUBJECT_BG = 'semantic.surface.default';
-// The scratch ruling's two numbers: what the indicator measures on white today,
-// and a minimum it does not clear. Written out rather than derived, because the
-// baseline test below holds them to what the gate measures — a ring that moves
-// makes that test red, which is this file being re-stated rather than drifting.
-const ROLE_SUBJECT_RATIO = 6.7;
-const ROLE_SUBJECT_MIN = 7.0;
+// The scratch ruling's two numbers: what the light ring's indicator measures on
+// white today, and a minimum it does not clear. Written out rather than derived,
+// because the baseline test below holds them to what the gate measures — a ring
+// that moves makes that test red, which is this file being re-stated rather
+// than drifting.
+const ROLE_SUBJECT_RATIO = 8.07;
+const ROLE_SUBJECT_MIN = 9.0;
 
 /**
  * Make the role-addressed ring row a failing, excused row inside `dir`: the
- * indicator measures 6.70:1 on white, so a minimum of 7 puts it below the bar
+ * indicator measures 8.07:1 on white, so a minimum of 9 puts it below the bar
  * without touching a single colour. What the four mutations below then break
  * is the binding, not the measurement.
  */
@@ -321,26 +322,30 @@ assertFailsFor(
     // The ring's other tone: still composed, still a real role, still not the
     // one the ruling was written about.
     editPairs(dir, (pairs) => {
-      pairs.find((p) => p.id === ROLE_SUBJECT).fg = 'spec:focus-ring.outer';
+      pairs.find((p) => p.id === ROLE_SUBJECT).fg = 'spec:focus-ring.light.outer';
     });
   },
-  /written for fg "spec:focus-ring\.indicator" but the pair now measures fg "spec:focus-ring\.outer" — a different pair, not the one excused/,
+  /written for fg "spec:focus-ring\.light\.indicator" but the pair now measures fg "spec:focus-ring\.light\.outer" — a different pair, not the one excused/,
 );
 
 assertFailsFor(
   'a colour the build composes, moved since the ruling, is not covered by the ruling',
   (dir) => {
     excuseRoleAddressedRow(dir);
-    // The literal lands on the ring's own source token (SPEC.focusRing.source),
-    // not on the ramp step it aliases, for the same reason as the token-path
-    // mutation above: color.cobalt.500 is semantic.text.accent as well, and
-    // moving it drags three unrelated gated rows under 4.5:1. Moving the source
-    // alone takes the indicator from 6.70 to 4.92 and leaves one FAIL row.
+    // The literal lands on the light ring's own source token — the role
+    // SPEC.focusRing.variants names for a normal ground — not on the ramp step
+    // it aliases, for the same reason as the token-path mutation above: moving
+    // a shared primitive drags unrelated gated rows with it.
+    //
+    // The value it moves to is the cobalt the ring carried while it was
+    // unthemed, so the mutation is the regression itself: the indicator goes
+    // from 8.07 to 6.70 on white, and every other row that reads this token
+    // stays above its own minimum, which keeps the gate red for one reason.
     const tokens = readJson(dir, 'tokens.json');
-    tokens.semantic.action.primary.$value = '#4A66E0';
+    tokens.semantic.theme.light['accent-ink'].$value = '#2B4BDB';
     writeJson(dir, 'tokens.json', tokens);
   },
-  /measures 4\.92, worse than the 6\.70 the entry was written for/,
+  /measures 6\.70, worse than the 8\.07 the entry was written for/,
 );
 
 assertFailsFor(

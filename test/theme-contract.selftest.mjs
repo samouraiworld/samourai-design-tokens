@@ -5,13 +5,54 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { ROOT, indexTokens, resolve, parseColor, composite, contrastRatio } from '../scripts/lib/tokens.mjs';
-import { SPEC_COLORS } from '../scripts/lib/spec.mjs';
+import { SPEC, SPEC_COLORS, focusRingColorProperty } from '../scripts/lib/spec.mjs';
 import preset from '../dist/tailwind.preset.js';
 
 const fixture = JSON.parse(readFileSync(join(ROOT, 'test/fixtures/themes.json'), 'utf8'));
 const tree = JSON.parse(readFileSync(join(ROOT, 'tokens.json'), 'utf8'));
 const css = readFileSync(join(ROOT, 'dist/tokens.css'), 'utf8');
 const geometry = { 'rail-width': '76px', 'rail-item-width': '56px', 'sidebar-width': '264px', 'document-max-width': '780px', 'document-min-width': '360px', 'dock-width': '340px', 'dock-offset': '24px' };
+
+/**
+ * The preset's ring keys are references, never values.
+ *
+ * The CSS side of the ring is pinned by literal value in every theme block, so
+ * a ring frozen there is caught. The preset side had nothing: replacing the
+ * `var()` with a hex gives both ring utilities one theme's ring under every
+ * `[data-theme]` attribute — the exact defect the themed ring closes — and the
+ * drift gate cannot see it, because the generator and its output move together.
+ * This is the `c-*` rule above applied to the ring: one key per variant, each
+ * key a reference to the custom property that variant declares, and that
+ * property declared in the generated CSS.
+ */
+function checkRingIsDynamic(styles, config) {
+  const variants = Object.keys(SPEC.focusRing.variants);
+  // Tailwind reads the bare `ring` class off DEFAULT; `default` is the absence
+  // of a variant, not a variant named "default". Restated here rather than
+  // imported, so a change to the build's naming policy has to be made twice.
+  const presetKey = (variant) => (variant === 'default' ? 'DEFAULT' : variant);
+  const ringColor = config.theme.extend.ringColor;
+  assert.deepEqual(
+    Object.keys(ringColor),
+    variants.map(presetKey),
+    'the preset carries one ring key per variant, and no others',
+  );
+  for (const variant of variants) {
+    const key = presetKey(variant);
+    const property = focusRingColorProperty(variant);
+    assert.match(
+      ringColor[key],
+      /^var\(--[a-z0-9-]+\)$/,
+      `ring ${key}: dynamic preset — a value here freezes one theme's ring into every theme`,
+    );
+    assert.equal(
+      ringColor[key],
+      `var(${property})`,
+      `ring ${key}: dynamic preset — the reference must be ${property}, the property this variant declares`,
+    );
+    assert.ok(styles.includes(`  ${property}: `), `${property}: the property the preset points at is declared in CSS`);
+  }
+}
 
 function checkContract(source, styles, config) {
   assert.deepEqual(Object.keys(source.semantic.theme ?? {}), ['light', 'dark', 'black'], 'complete theme set');
@@ -39,6 +80,7 @@ function checkContract(source, styles, config) {
     }
   }
   assert.match(styles, /:root, \[data-theme="light"\]/, 'unthemed default is light');
+  checkRingIsDynamic(styles, config);
   assert.equal(config.theme.extend.colors['c-page-grad'], undefined, 'gradients are not colors');
   assert.equal(config.theme.extend.backgroundImage['c-page-gradient'], 'var(--c-page-grad)');
   for (const [role, value] of Object.entries(geometry)) {
@@ -113,7 +155,7 @@ test('contrast covers every new color and explicitly reports non-normative measu
   weakened.pairs.find((r) => r.id === 'theme.dark/on-inverse/action-hover').min = 3;
   assert.throws(() => checkContrastCoverage(weakened), /actual button text criterion/);
   const misspelt = structuredClone(register);
-  misspelt.measurements.find((r) => r.id === 'theme.dark/focus-ring-indicator/surface').fg = 'spec:focus-ring.core';
+  misspelt.measurements.find((r) => r.id === 'focus-ring-on-inverse-halo/theme.dark.inverse').fg = 'spec:focus-ring.core';
   assert.throws(() => checkContrastCoverage(misspelt), /unknown spec reference "spec:focus-ring\.core"/);
 });
 
@@ -132,6 +174,23 @@ test('the acceptance contract detects missing, changed and frozen output', () =>
   const frozen = structuredClone(preset);
   frozen.theme.extend.colors['c-ink'] = '#2F3A45';
   assert.throws(() => checkContract(tree, css, frozen), /ink: dynamic preset/);
+  // The same freeze on the ring: one theme's indicator painted under every
+  // attribute, by both ring utilities, with dist/ still a faithful build of the
+  // source that produced it.
+  const frozenRing = structuredClone(preset);
+  frozenRing.theme.extend.ringColor.DEFAULT = '#2340C4';
+  assert.throws(() => checkContract(tree, css, frozenRing), /ring DEFAULT: dynamic preset — a value here freezes/);
+  const halfRing = structuredClone(preset);
+  delete halfRing.theme.extend.ringColor['on-inverse'];
+  assert.throws(() => checkContract(tree, css, halfRing), /one ring key per variant/);
+  const strayRing = structuredClone(preset);
+  // A name no variant will ever take: a mutation that borrows a plausible one
+  // stops proving anything on the day that variant becomes real.
+  strayRing.theme.extend.ringColor['on-nothing'] = 'var(--focus-ring-on-nothing-color)';
+  assert.throws(() => checkContract(tree, css, strayRing), /one ring key per variant/);
+  const danglingRing = structuredClone(preset);
+  danglingRing.theme.extend.ringColor.DEFAULT = 'var(--focus-ring-colour)';
+  assert.throws(() => checkContract(tree, css, danglingRing), /the reference must be --focus-ring-color/);
   const narrow = structuredClone(tree);
   narrow.space['shell-rail-width'].$value = '56px';
   assert.throws(() => checkContract(narrow, css, preset), /rail-width: geometry/);

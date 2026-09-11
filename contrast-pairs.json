@@ -1,5 +1,5 @@
 {
-  "$comment": "The accessibility contract as data. The four load-bearing fields of a row — `fg`, `bg`, `label`, `min` — are the same four values samourai-visio/scripts/check-contrast.py carries in the `PAIRINGS` tuples it hardcodes; that script reads no JSON and this file is not an input to it. The shape is deliberate all the same, so a pairing can move from there to here without being reinterpreted. `fg` and `bg` are token paths from tokens.json, or a literal #hex. `min` is 4.5 for text (WCAG 2.1 SC 1.4.3) or 3.0 for a non-text boundary, control edge or focus indicator (SC 1.4.11); the large-text 3:1 exemption is not used anywhere in this system. A translucent foreground is composited over its background before it is measured, always: the alpha travels with the colour and no row can opt out, because a translucent colour measured as if it were opaque reports a ratio no user ever sees. `fg` may also be a `spec:` role rather than a token — `spec:focus-ring.indicator` is the ring tone painted against the control, `spec:focus-ring.outer` the tone painted onto the background — which resolves to a colour scripts/lib/spec.mjs composes for the build, at its real alpha. That is what keeps these rows measuring the focus ring that ships rather than a token named after it (ADR-0002). `exempt` records a row that is measured and reported but not gated. `expect: \"fail\"` inverts the row: it is a pair the design system forbids, and the gate fails if it ever starts passing, because that means the palette moved under the rule. Additional measurements classify decorative or unsupported capability combinations, and figures this package can compute about a value it ships but does not gate; they are explicitly outside normative contrast acceptance, carry a purpose, and are measured by the theme contract self-test. A measurement may name a `spec:` role in `fg` exactly as a pair can, so a colour the build composes is reported at the geometry that actually ships and moves when that geometry moves. No allowlist entries are created for them, and a measurement never becomes a requirement, a waiver or a threshold.",
+  "$comment": "The accessibility contract as data. The four load-bearing fields of a row — `fg`, `bg`, `label`, `min` — are the same four values samourai-visio/scripts/check-contrast.py carries in the `PAIRINGS` tuples it hardcodes; that script reads no JSON and this file is not an input to it. The shape is deliberate all the same, so a pairing can move from there to here without being reinterpreted. `fg` and `bg` are token paths from tokens.json, or a literal #hex. `min` is 4.5 for text (WCAG 2.1 SC 1.4.3) or 3.0 for a non-text boundary, control edge or focus indicator (SC 1.4.11); the large-text 3:1 exemption is not used anywhere in this system. A translucent foreground is composited over its background before it is measured, always: the alpha travels with the colour and no row can opt out, because a translucent colour measured as if it were opaque reports a ratio no user ever sees. `fg` may also be a `spec:` role rather than a token — `spec:focus-ring.<theme>.indicator` is the ring tone painted against the control and `spec:focus-ring.<theme>.outer` the tone painted onto the background, with `spec:focus-ring-on-inverse.<theme>.*` for the variant a control on an inverse panel is drawn with — which resolves to a colour scripts/lib/spec.mjs composes for the build, at its real alpha. The theme is part of the name because the ring follows `[data-theme]`: a role without one would let a row measure the light ring on a ground the dark ring is what actually paints. That is what keeps these rows measuring the focus ring that ships rather than a token named after it (ADR-0002). `exempt` records a row that is measured and reported but not gated. `expect: \"fail\"` inverts the row: it is a pair the design system forbids, and the gate fails if it ever starts passing, because that means the palette moved under the rule. Additional measurements classify decorative or unsupported capability combinations, and figures this package can compute about a value it ships but does not gate; they are explicitly outside normative contrast acceptance, carry a purpose, and are measured by the theme contract self-test. A measurement may name a `spec:` role in `fg` exactly as a pair can, so a colour the build composes is reported at the geometry that actually ships and moves when that geometry moves. No allowlist entries are created for them, and a measurement never becomes a requirement, a waiver or a threshold.",
   "pairs": [
     {
       "id": "text.primary/surface.default",
@@ -259,33 +259,427 @@
     },
     {
       "id": "focus-ring/surface.default",
-      "fg": "spec:focus-ring.indicator",
+      "fg": "spec:focus-ring.light.indicator",
       "bg": "semantic.surface.default",
-      "label": "focus ring on white — the ring's innermost tone as the build composes it, which is the tone that sits against the control and the one a keyboard user has to find (non-text, 1.4.11)",
+      "label": "focus ring on white — the light ring's innermost tone as the build composes it, which is what a page carrying no [data-theme] paints, and the tone a keyboard user has to find (non-text, 1.4.11)",
       "min": 3.0
     },
     {
       "id": "focus-ring/surface.page",
-      "fg": "spec:focus-ring.indicator",
+      "fg": "spec:focus-ring.light.indicator",
       "bg": "semantic.surface.page",
       "label": "focus ring on the page (frost.100) — same tone, measured off a card (non-text, 1.4.11)",
       "min": 3.0
     },
     {
       "id": "focus-ring-halo/surface.default",
-      "fg": "spec:focus-ring.outer",
+      "fg": "spec:focus-ring.light.outer",
       "bg": "semantic.surface.default",
-      "label": "the ring's outermost tone alone on white, at its own alpha — 1.78:1. This is the single-tone ring COMPONENTS.md delivered, and it is the reason the ring gained an opaque core: a 35 % halo is not an indicator. The row is inverted, so the halo cannot be quietly promoted back to carrying the ring on its own — if it ever clears 3:1 the two-tone construction is doing nothing and someone has to say which tone the indicator is",
+      "label": "the ring's outermost tone alone on white, at its own alpha — 1.86:1. A single 35 % halo is what COMPONENTS.md delivered as the whole ring, and measuring it is the reason the ring gained an opaque core: a 35 % halo is not an indicator, whatever colour it is mixed from. The row is inverted, so the halo cannot be quietly promoted back to carrying the ring on its own — if it ever clears 3:1 the two-tone construction is doing nothing and someone has to say which tone the indicator is",
       "min": 3.0,
       "expect": "fail"
     },
     {
       "id": "focus-ring-halo/surface.page",
-      "fg": "spec:focus-ring.outer",
+      "fg": "spec:focus-ring.light.outer",
       "bg": "semantic.surface.page",
-      "label": "the same outermost tone on the page (frost.100) — 1.74:1. Both surfaces stay listed so neither is forgotten when the ring is revisited",
+      "label": "the same outermost tone on the page (frost.100) — 1.82:1. Both surfaces stay listed so neither is forgotten when the ring is revisited",
       "min": 3.0,
       "expect": "fail"
+    },
+    {
+      "id": "focus-ring-halo/theme.dark.surface",
+      "fg": "spec:focus-ring.dark.outer",
+      "bg": "semantic.theme.dark.surface",
+      "label": "dark: the ring's outermost tone alone on surface, at its own alpha — 2.27:1. Inverted like the two light rows above, and for the same reason: a 35 % halo is not the indicator, and if it ever clears 3:1 the two-tone construction is doing nothing and someone has to say which tone the indicator is",
+      "min": 3.0,
+      "expect": "fail"
+    },
+    {
+      "id": "focus-ring-halo/theme.black.surface",
+      "fg": "spec:focus-ring.black.outer",
+      "bg": "semantic.theme.black.surface",
+      "label": "black: the ring's outermost tone alone on surface, at its own alpha — 2.20:1. Inverted like the two light rows above, and for the same reason: a 35 % halo is not the indicator, and if it ever clears 3:1 the two-tone construction is doing nothing and someone has to say which tone the indicator is",
+      "min": 3.0,
+      "expect": "fail"
+    },
+    {
+      "id": "theme.light/focus-ring/surface",
+      "fg": "spec:focus-ring.light.indicator",
+      "bg": "semantic.theme.light.surface",
+      "label": "light: focus ring core on surface — the opaque tone that sits against the control, as [data-theme=\"light\"] paints it (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.light/focus-ring/sunken",
+      "fg": "spec:focus-ring.light.indicator",
+      "bg": "semantic.theme.light.sunken",
+      "label": "light: focus ring core on sunken — the opaque tone that sits against the control, as [data-theme=\"light\"] paints it (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.light/focus-ring/page",
+      "fg": "spec:focus-ring.light.indicator",
+      "bg": "semantic.theme.light.page",
+      "label": "light: focus ring core on page — the opaque tone that sits against the control, as [data-theme=\"light\"] paints it (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.light/focus-ring/hairline",
+      "fg": "spec:focus-ring.light.indicator",
+      "bg": "semantic.theme.light.hairline",
+      "label": "light: focus ring core on hairline — the opaque tone that sits against the control, as [data-theme=\"light\"] paints it (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.light/focus-ring/muted",
+      "fg": "spec:focus-ring.light.indicator",
+      "bg": "semantic.theme.light.muted",
+      "label": "light: focus ring core on muted — the opaque tone that sits against the control, as [data-theme=\"light\"] paints it (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.light/focus-ring/muted-2",
+      "fg": "spec:focus-ring.light.indicator",
+      "bg": "semantic.theme.light.muted-2",
+      "label": "light: focus ring core on muted-2 — the opaque tone that sits against the control, as [data-theme=\"light\"] paints it (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.light/focus-ring/accent-soft",
+      "fg": "spec:focus-ring.light.indicator",
+      "bg": "semantic.theme.light.accent-soft",
+      "label": "light: focus ring core on the painted accent-soft ground — a control sits on these too, so the ring is claimed to clear them (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.light/focus-ring/ok-soft",
+      "fg": "spec:focus-ring.light.indicator",
+      "bg": "semantic.theme.light.ok-soft",
+      "label": "light: focus ring core on the painted ok-soft ground — a control sits on these too, so the ring is claimed to clear them (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.light/focus-ring/warn-soft",
+      "fg": "spec:focus-ring.light.indicator",
+      "bg": "semantic.theme.light.warn-soft",
+      "label": "light: focus ring core on the painted warn-soft ground — a control sits on these too, so the ring is claimed to clear them (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.light/focus-ring/bad-soft",
+      "fg": "spec:focus-ring.light.indicator",
+      "bg": "semantic.theme.light.bad-soft",
+      "label": "light: focus ring core on the painted bad-soft ground — a control sits on these too, so the ring is claimed to clear them (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.light/focus-ring/t1-bg",
+      "fg": "spec:focus-ring.light.indicator",
+      "bg": "semantic.theme.light.t1-bg",
+      "label": "light: focus ring core on the painted t1-bg ground — a control sits on these too, so the ring is claimed to clear them (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.light/focus-ring/t2-bg",
+      "fg": "spec:focus-ring.light.indicator",
+      "bg": "semantic.theme.light.t2-bg",
+      "label": "light: focus ring core on the painted t2-bg ground — a control sits on these too, so the ring is claimed to clear them (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.light/focus-ring/t3-bg",
+      "fg": "spec:focus-ring.light.indicator",
+      "bg": "semantic.theme.light.t3-bg",
+      "label": "light: focus ring core on the painted t3-bg ground — a control sits on these too, so the ring is claimed to clear them (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.light/focus-ring/t4-bg",
+      "fg": "spec:focus-ring.light.indicator",
+      "bg": "semantic.theme.light.t4-bg",
+      "label": "light: focus ring core on the painted t4-bg ground — a control sits on these too, so the ring is claimed to clear them (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.light/focus-ring/t5-bg",
+      "fg": "spec:focus-ring.light.indicator",
+      "bg": "semantic.theme.light.t5-bg",
+      "label": "light: focus ring core on the painted t5-bg ground — a control sits on these too, so the ring is claimed to clear them (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.light/focus-ring/t6-bg",
+      "fg": "spec:focus-ring.light.indicator",
+      "bg": "semantic.theme.light.t6-bg",
+      "label": "light: focus ring core on the painted t6-bg ground — a control sits on these too, so the ring is claimed to clear them (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.light/focus-ring-on-inverse/inverse",
+      "fg": "spec:focus-ring-on-inverse.light.indicator",
+      "bg": "semantic.theme.light.inverse",
+      "label": "light: on-inverse focus ring core on inverse — the variant a control on an inverse panel is drawn with, where the normal core is the wrong side of the ground (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.light/focus-ring-on-inverse/inverse-2",
+      "fg": "spec:focus-ring-on-inverse.light.indicator",
+      "bg": "semantic.theme.light.inverse-2",
+      "label": "light: on-inverse focus ring core on inverse-2 — the variant a control on an inverse panel is drawn with, where the normal core is the wrong side of the ground (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.dark/focus-ring/surface",
+      "fg": "spec:focus-ring.dark.indicator",
+      "bg": "semantic.theme.dark.surface",
+      "label": "dark: focus ring core on surface — the opaque tone that sits against the control, as [data-theme=\"dark\"] paints it (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.dark/focus-ring/sunken",
+      "fg": "spec:focus-ring.dark.indicator",
+      "bg": "semantic.theme.dark.sunken",
+      "label": "dark: focus ring core on sunken — the opaque tone that sits against the control, as [data-theme=\"dark\"] paints it (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.dark/focus-ring/page",
+      "fg": "spec:focus-ring.dark.indicator",
+      "bg": "semantic.theme.dark.page",
+      "label": "dark: focus ring core on page — the opaque tone that sits against the control, as [data-theme=\"dark\"] paints it (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.dark/focus-ring/hairline",
+      "fg": "spec:focus-ring.dark.indicator",
+      "bg": "semantic.theme.dark.hairline",
+      "label": "dark: focus ring core on hairline — the opaque tone that sits against the control, as [data-theme=\"dark\"] paints it (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.dark/focus-ring/muted",
+      "fg": "spec:focus-ring.dark.indicator",
+      "bg": "semantic.theme.dark.muted",
+      "label": "dark: focus ring core on muted — the opaque tone that sits against the control, as [data-theme=\"dark\"] paints it (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.dark/focus-ring/muted-2",
+      "fg": "spec:focus-ring.dark.indicator",
+      "bg": "semantic.theme.dark.muted-2",
+      "label": "dark: focus ring core on muted-2 — the opaque tone that sits against the control, as [data-theme=\"dark\"] paints it (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.dark/focus-ring/accent-soft",
+      "fg": "spec:focus-ring.dark.indicator",
+      "bg": "semantic.theme.dark.accent-soft",
+      "label": "dark: focus ring core on the painted accent-soft ground — a control sits on these too, so the ring is claimed to clear them (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.dark/focus-ring/ok-soft",
+      "fg": "spec:focus-ring.dark.indicator",
+      "bg": "semantic.theme.dark.ok-soft",
+      "label": "dark: focus ring core on the painted ok-soft ground — a control sits on these too, so the ring is claimed to clear them (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.dark/focus-ring/warn-soft",
+      "fg": "spec:focus-ring.dark.indicator",
+      "bg": "semantic.theme.dark.warn-soft",
+      "label": "dark: focus ring core on the painted warn-soft ground — a control sits on these too, so the ring is claimed to clear them (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.dark/focus-ring/bad-soft",
+      "fg": "spec:focus-ring.dark.indicator",
+      "bg": "semantic.theme.dark.bad-soft",
+      "label": "dark: focus ring core on the painted bad-soft ground — a control sits on these too, so the ring is claimed to clear them (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.dark/focus-ring/t1-bg",
+      "fg": "spec:focus-ring.dark.indicator",
+      "bg": "semantic.theme.dark.t1-bg",
+      "label": "dark: focus ring core on the painted t1-bg ground — a control sits on these too, so the ring is claimed to clear them (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.dark/focus-ring/t2-bg",
+      "fg": "spec:focus-ring.dark.indicator",
+      "bg": "semantic.theme.dark.t2-bg",
+      "label": "dark: focus ring core on the painted t2-bg ground — a control sits on these too, so the ring is claimed to clear them (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.dark/focus-ring/t3-bg",
+      "fg": "spec:focus-ring.dark.indicator",
+      "bg": "semantic.theme.dark.t3-bg",
+      "label": "dark: focus ring core on the painted t3-bg ground — a control sits on these too, so the ring is claimed to clear them (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.dark/focus-ring/t4-bg",
+      "fg": "spec:focus-ring.dark.indicator",
+      "bg": "semantic.theme.dark.t4-bg",
+      "label": "dark: focus ring core on the painted t4-bg ground — a control sits on these too, so the ring is claimed to clear them (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.dark/focus-ring/t5-bg",
+      "fg": "spec:focus-ring.dark.indicator",
+      "bg": "semantic.theme.dark.t5-bg",
+      "label": "dark: focus ring core on the painted t5-bg ground — a control sits on these too, so the ring is claimed to clear them (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.dark/focus-ring/t6-bg",
+      "fg": "spec:focus-ring.dark.indicator",
+      "bg": "semantic.theme.dark.t6-bg",
+      "label": "dark: focus ring core on the painted t6-bg ground — a control sits on these too, so the ring is claimed to clear them (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.dark/focus-ring-on-inverse/inverse",
+      "fg": "spec:focus-ring-on-inverse.dark.indicator",
+      "bg": "semantic.theme.dark.inverse",
+      "label": "dark: on-inverse focus ring core on inverse — the variant a control on an inverse panel is drawn with, where the normal core is the wrong side of the ground (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.dark/focus-ring-on-inverse/inverse-2",
+      "fg": "spec:focus-ring-on-inverse.dark.indicator",
+      "bg": "semantic.theme.dark.inverse-2",
+      "label": "dark: on-inverse focus ring core on inverse-2 — the variant a control on an inverse panel is drawn with, where the normal core is the wrong side of the ground (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.black/focus-ring/surface",
+      "fg": "spec:focus-ring.black.indicator",
+      "bg": "semantic.theme.black.surface",
+      "label": "black: focus ring core on surface — the opaque tone that sits against the control, as [data-theme=\"black\"] paints it (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.black/focus-ring/sunken",
+      "fg": "spec:focus-ring.black.indicator",
+      "bg": "semantic.theme.black.sunken",
+      "label": "black: focus ring core on sunken — the opaque tone that sits against the control, as [data-theme=\"black\"] paints it (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.black/focus-ring/page",
+      "fg": "spec:focus-ring.black.indicator",
+      "bg": "semantic.theme.black.page",
+      "label": "black: focus ring core on page — the opaque tone that sits against the control, as [data-theme=\"black\"] paints it (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.black/focus-ring/hairline",
+      "fg": "spec:focus-ring.black.indicator",
+      "bg": "semantic.theme.black.hairline",
+      "label": "black: focus ring core on hairline — the opaque tone that sits against the control, as [data-theme=\"black\"] paints it (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.black/focus-ring/muted",
+      "fg": "spec:focus-ring.black.indicator",
+      "bg": "semantic.theme.black.muted",
+      "label": "black: focus ring core on muted — the opaque tone that sits against the control, as [data-theme=\"black\"] paints it (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.black/focus-ring/muted-2",
+      "fg": "spec:focus-ring.black.indicator",
+      "bg": "semantic.theme.black.muted-2",
+      "label": "black: focus ring core on muted-2 — the opaque tone that sits against the control, as [data-theme=\"black\"] paints it (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.black/focus-ring/accent-soft",
+      "fg": "spec:focus-ring.black.indicator",
+      "bg": "semantic.theme.black.accent-soft",
+      "label": "black: focus ring core on the painted accent-soft ground — a control sits on these too, so the ring is claimed to clear them (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.black/focus-ring/ok-soft",
+      "fg": "spec:focus-ring.black.indicator",
+      "bg": "semantic.theme.black.ok-soft",
+      "label": "black: focus ring core on the painted ok-soft ground — a control sits on these too, so the ring is claimed to clear them (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.black/focus-ring/warn-soft",
+      "fg": "spec:focus-ring.black.indicator",
+      "bg": "semantic.theme.black.warn-soft",
+      "label": "black: focus ring core on the painted warn-soft ground — a control sits on these too, so the ring is claimed to clear them (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.black/focus-ring/bad-soft",
+      "fg": "spec:focus-ring.black.indicator",
+      "bg": "semantic.theme.black.bad-soft",
+      "label": "black: focus ring core on the painted bad-soft ground — a control sits on these too, so the ring is claimed to clear them (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.black/focus-ring/t1-bg",
+      "fg": "spec:focus-ring.black.indicator",
+      "bg": "semantic.theme.black.t1-bg",
+      "label": "black: focus ring core on the painted t1-bg ground — a control sits on these too, so the ring is claimed to clear them (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.black/focus-ring/t2-bg",
+      "fg": "spec:focus-ring.black.indicator",
+      "bg": "semantic.theme.black.t2-bg",
+      "label": "black: focus ring core on the painted t2-bg ground — a control sits on these too, so the ring is claimed to clear them (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.black/focus-ring/t3-bg",
+      "fg": "spec:focus-ring.black.indicator",
+      "bg": "semantic.theme.black.t3-bg",
+      "label": "black: focus ring core on the painted t3-bg ground — a control sits on these too, so the ring is claimed to clear them (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.black/focus-ring/t4-bg",
+      "fg": "spec:focus-ring.black.indicator",
+      "bg": "semantic.theme.black.t4-bg",
+      "label": "black: focus ring core on the painted t4-bg ground — a control sits on these too, so the ring is claimed to clear them (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.black/focus-ring/t5-bg",
+      "fg": "spec:focus-ring.black.indicator",
+      "bg": "semantic.theme.black.t5-bg",
+      "label": "black: focus ring core on the painted t5-bg ground — a control sits on these too, so the ring is claimed to clear them (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.black/focus-ring/t6-bg",
+      "fg": "spec:focus-ring.black.indicator",
+      "bg": "semantic.theme.black.t6-bg",
+      "label": "black: focus ring core on the painted t6-bg ground — a control sits on these too, so the ring is claimed to clear them (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.black/focus-ring-on-inverse/inverse",
+      "fg": "spec:focus-ring-on-inverse.black.indicator",
+      "bg": "semantic.theme.black.inverse",
+      "label": "black: on-inverse focus ring core on inverse — the variant a control on an inverse panel is drawn with, where the normal core is the wrong side of the ground (non-text, 1.4.11)",
+      "min": 3.0
+    },
+    {
+      "id": "theme.black/focus-ring-on-inverse/inverse-2",
+      "fg": "spec:focus-ring-on-inverse.black.indicator",
+      "bg": "semantic.theme.black.inverse-2",
+      "label": "black: on-inverse focus ring core on inverse-2 — the variant a control on an inverse panel is drawn with, where the normal core is the wrong side of the ground (non-text, 1.4.11)",
+      "min": 3.0
     },
 
     {
@@ -2041,39 +2435,57 @@
       "thresholdForComparison": 4.5
     },
     {
-      "id": "theme.dark/focus-ring-indicator/surface",
-      "fg": "spec:focus-ring.indicator",
-      "bg": "semantic.theme.dark.surface",
-      "label": "dark: shipped focus-ring indicator core on surface; the ring is not themed",
-      "kind": "capability",
-      "purpose": "The focus indicator this package ships, composed against a themed ground introduced here. The ring does not follow [data-theme]: --focus-ring is declared once on :root and redeclared in no theme block, and the preset's ringColor.DEFAULT carries the same single value, so there is no themed alternative to reach for. It measures below the 3:1 SC 1.4.11 asks of a focus indicator and that the gate enforces on the two light surfaces it does cover (focus-ring/surface.default 6.70:1, focus-ring/surface.page 6.01:1). Reported, not enforced: no waiver was added, no row was exempted and no threshold moved. Whether the ring gains a themed variant, or the shortfall is accepted with a stated reason, is owner decision B-themed-ring, open under ADR-0002; this row exists so the number is computed rather than absent, and it reads the ring through the spec: role so a change to the ring's geometry moves it instead of leaving it describing a tone the ring no longer has.",
+      "id": "focus-ring-on-inverse-halo/theme.light.inverse",
+      "fg": "spec:focus-ring-on-inverse.light.outer",
+      "bg": "semantic.theme.light.inverse",
+      "label": "light: the on-inverse ring's outermost tone alone on the inverse panel, at its own alpha",
+      "kind": "decorative",
+      "purpose": "The outer softening of the on-inverse ring, at 35 %, measured alone. It is not the indicator: the opaque core is, and theme.light/focus-ring-on-inverse/inverse and /inverse-2 gate that core at 3:1. This tone carries no inverted row of its own, unlike the default ring's halo: that one stays below 3:1 on all 54 theme-and-ground combinations it was measured over, while this one reaches 3.04:1 on dark.inverse and 3.15:1 on black.inverse-2, so a row asserting it stays below 3:1 would be false. Both inverse panels carry a row, in every theme, so each figure quoted for this tone is derived here rather than copied into prose. What holds \u201cthe halo is never the indicator\u201d on the two grounds where an inverted row cannot is the opaque core, which test/color-math.selftest.mjs asserts across every theme and every variant.",
       "thresholdForComparison": 3
     },
     {
-      "id": "theme.dark/focus-ring-indicator/sunken",
-      "fg": "spec:focus-ring.indicator",
-      "bg": "semantic.theme.dark.sunken",
-      "label": "dark: shipped focus-ring indicator core on sunken; the ring is not themed",
-      "kind": "capability",
-      "purpose": "The focus indicator this package ships, composed against a themed ground introduced here. The ring does not follow [data-theme]: --focus-ring is declared once on :root and redeclared in no theme block, and the preset's ringColor.DEFAULT carries the same single value, so there is no themed alternative to reach for. It measures below the 3:1 SC 1.4.11 asks of a focus indicator and that the gate enforces on the two light surfaces it does cover (focus-ring/surface.default 6.70:1, focus-ring/surface.page 6.01:1). Reported, not enforced: no waiver was added, no row was exempted and no threshold moved. Whether the ring gains a themed variant, or the shortfall is accepted with a stated reason, is owner decision B-themed-ring, open under ADR-0002; this row exists so the number is computed rather than absent, and it reads the ring through the spec: role so a change to the ring's geometry moves it instead of leaving it describing a tone the ring no longer has.",
+      "id": "focus-ring-on-inverse-halo/theme.light.inverse-2",
+      "fg": "spec:focus-ring-on-inverse.light.outer",
+      "bg": "semantic.theme.light.inverse-2",
+      "label": "light: the on-inverse ring's outermost tone alone on the second inverse panel, at its own alpha",
+      "kind": "decorative",
+      "purpose": "The outer softening of the on-inverse ring, at 35 %, measured alone. It is not the indicator: the opaque core is, and theme.light/focus-ring-on-inverse/inverse and /inverse-2 gate that core at 3:1. This tone carries no inverted row of its own, unlike the default ring's halo: that one stays below 3:1 on all 54 theme-and-ground combinations it was measured over, while this one reaches 3.04:1 on dark.inverse and 3.15:1 on black.inverse-2, so a row asserting it stays below 3:1 would be false. Both inverse panels carry a row, in every theme, so each figure quoted for this tone is derived here rather than copied into prose. What holds \u201cthe halo is never the indicator\u201d on the two grounds where an inverted row cannot is the opaque core, which test/color-math.selftest.mjs asserts across every theme and every variant.",
       "thresholdForComparison": 3
     },
     {
-      "id": "theme.dark/focus-ring-indicator/page",
-      "fg": "spec:focus-ring.indicator",
-      "bg": "semantic.theme.dark.page",
-      "label": "dark: shipped focus-ring indicator core on page; the ring is not themed",
-      "kind": "capability",
-      "purpose": "The focus indicator this package ships, composed against a themed ground introduced here. The ring does not follow [data-theme]: --focus-ring is declared once on :root and redeclared in no theme block, and the preset's ringColor.DEFAULT carries the same single value, so there is no themed alternative to reach for. It measures below the 3:1 SC 1.4.11 asks of a focus indicator and that the gate enforces on the two light surfaces it does cover (focus-ring/surface.default 6.70:1, focus-ring/surface.page 6.01:1). Reported, not enforced: no waiver was added, no row was exempted and no threshold moved. Whether the ring gains a themed variant, or the shortfall is accepted with a stated reason, is owner decision B-themed-ring, open under ADR-0002; this row exists so the number is computed rather than absent, and it reads the ring through the spec: role so a change to the ring's geometry moves it instead of leaving it describing a tone the ring no longer has.",
+      "id": "focus-ring-on-inverse-halo/theme.dark.inverse",
+      "fg": "spec:focus-ring-on-inverse.dark.outer",
+      "bg": "semantic.theme.dark.inverse",
+      "label": "dark: the on-inverse ring's outermost tone alone on the inverse panel, at its own alpha",
+      "kind": "decorative",
+      "purpose": "The outer softening of the on-inverse ring, at 35 %, measured alone. It is not the indicator: the opaque core is, and theme.dark/focus-ring-on-inverse/inverse and /inverse-2 gate that core at 3:1. This tone carries no inverted row of its own, unlike the default ring's halo: that one stays below 3:1 on all 54 theme-and-ground combinations it was measured over, while this one reaches 3.04:1 on dark.inverse and 3.15:1 on black.inverse-2, so a row asserting it stays below 3:1 would be false. Both inverse panels carry a row, in every theme, so each figure quoted for this tone is derived here rather than copied into prose. What holds \u201cthe halo is never the indicator\u201d on the two grounds where an inverted row cannot is the opaque core, which test/color-math.selftest.mjs asserts across every theme and every variant.",
       "thresholdForComparison": 3
     },
     {
-      "id": "theme.black/focus-ring-indicator/surface",
-      "fg": "spec:focus-ring.indicator",
-      "bg": "semantic.theme.black.surface",
-      "label": "black: shipped focus-ring indicator core on surface; the ring is not themed",
-      "kind": "capability",
-      "purpose": "The focus indicator this package ships, composed against a themed ground introduced here. The ring does not follow [data-theme]: --focus-ring is declared once on :root and redeclared in no theme block, and the preset's ringColor.DEFAULT carries the same single value, so there is no themed alternative to reach for. It measures below the 3:1 SC 1.4.11 asks of a focus indicator and that the gate enforces on the two light surfaces it does cover (focus-ring/surface.default 6.70:1, focus-ring/surface.page 6.01:1). Reported, not enforced: no waiver was added, no row was exempted and no threshold moved. Whether the ring gains a themed variant, or the shortfall is accepted with a stated reason, is owner decision B-themed-ring, open under ADR-0002; this row exists so the number is computed rather than absent, and it reads the ring through the spec: role so a change to the ring's geometry moves it instead of leaving it describing a tone the ring no longer has.",
+      "id": "focus-ring-on-inverse-halo/theme.dark.inverse-2",
+      "fg": "spec:focus-ring-on-inverse.dark.outer",
+      "bg": "semantic.theme.dark.inverse-2",
+      "label": "dark: the on-inverse ring's outermost tone alone on the second inverse panel, at its own alpha",
+      "kind": "decorative",
+      "purpose": "The outer softening of the on-inverse ring, at 35 %, measured alone. It is not the indicator: the opaque core is, and theme.dark/focus-ring-on-inverse/inverse and /inverse-2 gate that core at 3:1. This tone carries no inverted row of its own, unlike the default ring's halo: that one stays below 3:1 on all 54 theme-and-ground combinations it was measured over, while this one reaches 3.04:1 on dark.inverse and 3.15:1 on black.inverse-2, so a row asserting it stays below 3:1 would be false. Both inverse panels carry a row, in every theme, so each figure quoted for this tone is derived here rather than copied into prose. What holds \u201cthe halo is never the indicator\u201d on the two grounds where an inverted row cannot is the opaque core, which test/color-math.selftest.mjs asserts across every theme and every variant.",
+      "thresholdForComparison": 3
+    },
+    {
+      "id": "focus-ring-on-inverse-halo/theme.black.inverse",
+      "fg": "spec:focus-ring-on-inverse.black.outer",
+      "bg": "semantic.theme.black.inverse",
+      "label": "black: the on-inverse ring's outermost tone alone on the inverse panel, at its own alpha",
+      "kind": "decorative",
+      "purpose": "The outer softening of the on-inverse ring, at 35 %, measured alone. It is not the indicator: the opaque core is, and theme.black/focus-ring-on-inverse/inverse and /inverse-2 gate that core at 3:1. This tone carries no inverted row of its own, unlike the default ring's halo: that one stays below 3:1 on all 54 theme-and-ground combinations it was measured over, while this one reaches 3.04:1 on dark.inverse and 3.15:1 on black.inverse-2, so a row asserting it stays below 3:1 would be false. Both inverse panels carry a row, in every theme, so each figure quoted for this tone is derived here rather than copied into prose. What holds \u201cthe halo is never the indicator\u201d on the two grounds where an inverted row cannot is the opaque core, which test/color-math.selftest.mjs asserts across every theme and every variant.",
+      "thresholdForComparison": 3
+    },
+    {
+      "id": "focus-ring-on-inverse-halo/theme.black.inverse-2",
+      "fg": "spec:focus-ring-on-inverse.black.outer",
+      "bg": "semantic.theme.black.inverse-2",
+      "label": "black: the on-inverse ring's outermost tone alone on the second inverse panel, at its own alpha",
+      "kind": "decorative",
+      "purpose": "The outer softening of the on-inverse ring, at 35 %, measured alone. It is not the indicator: the opaque core is, and theme.black/focus-ring-on-inverse/inverse and /inverse-2 gate that core at 3:1. This tone carries no inverted row of its own, unlike the default ring's halo: that one stays below 3:1 on all 54 theme-and-ground combinations it was measured over, while this one reaches 3.04:1 on dark.inverse and 3.15:1 on black.inverse-2, so a row asserting it stays below 3:1 would be false. Both inverse panels carry a row, in every theme, so each figure quoted for this tone is derived here rather than copied into prose. What holds \u201cthe halo is never the indicator\u201d on the two grounds where an inverted row cannot is the opaque core, which test/color-math.selftest.mjs asserts across every theme and every variant.",
       "thresholdForComparison": 3
     }
   ]

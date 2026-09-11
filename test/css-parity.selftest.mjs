@@ -60,12 +60,50 @@ test('the page gradient references the frost variables rather than inlining hexe
   assert.match(css, /--bg-page: linear-gradient\(115deg, var\(--frost-200\) 0%, var\(--frost-100\) 45%, var\(--white\) 100%\);/);
 });
 
-test('the focus ring keeps an opaque core, and the halo keeps its alpha intact', () => {
-  // Two assertions, one line, because the ring fails in two opposite ways. Drop
-  // the opaque core and the indicator is back to the 1.78:1 halo SC 1.4.11
-  // rejects; drop the halo's alpha and the contrast gate would measure a colour
+test('every theme declares both rings, an opaque core inside a translucent halo', () => {
+  // The ring fails in two opposite ways. Drop the opaque core and the indicator
+  // is back to a 35 % halo, which SC 1.4.11 rejects and which measures 1.86:1
+  // on white; drop the halo's alpha and the contrast gate would measure a colour
   // no user ever sees. The core is first so it paints against the control.
-  assert.match(css, /--focus-ring: 0 0 0 2px #2B4BDB, 0 0 0 5px rgba\(43, 75, 219, 0\.35\);/);
+  //
+  // Every block is listed, and the values are literals rather than a pattern.
+  // A ring declared in one block and not the others is the unthemed ring
+  // returning under a new name: the one declaration would win under every
+  // attribute, and the theme that reads it is not the theme that painted it.
+  const rings = {
+    ':root, [data-theme="light"]': [
+      '--focus-ring: 0 0 0 2px #2340C4, 0 0 0 5px rgba(35, 64, 196, 0.35);',
+      '--focus-ring-color: #2340C4;',
+      '--focus-ring-on-inverse: 0 0 0 2px #FFFFFF, 0 0 0 5px rgba(255, 255, 255, 0.35);',
+      '--focus-ring-on-inverse-color: #FFFFFF;',
+    ],
+    '[data-theme="dark"]': [
+      '--focus-ring: 0 0 0 2px #A9BBFF, 0 0 0 5px rgba(169, 187, 255, 0.35);',
+      '--focus-ring-color: #A9BBFF;',
+      '--focus-ring-on-inverse: 0 0 0 2px #F3F7FB, 0 0 0 5px rgba(243, 247, 251, 0.35);',
+      '--focus-ring-on-inverse-color: #F3F7FB;',
+    ],
+    '[data-theme="black"]': [
+      '--focus-ring: 0 0 0 2px #A9BBFF, 0 0 0 5px rgba(169, 187, 255, 0.35);',
+      '--focus-ring-color: #A9BBFF;',
+      '--focus-ring-on-inverse: 0 0 0 2px #F7FAFC, 0 0 0 5px rgba(247, 250, 252, 0.35);',
+      '--focus-ring-on-inverse-color: #F7FAFC;',
+    ],
+  };
+
+  for (const [selector, declarations] of Object.entries(rings)) {
+    const opened = css.split(`${selector} {`);
+    assert.equal(opened.length, 2, `${selector} must open exactly one block`);
+    const block = opened[1].split('}')[0];
+    for (const declaration of declarations) {
+      assert.ok(block.includes(declaration), `${selector} must declare ${declaration}`);
+    }
+  }
+
+  // ...and nowhere else. A copy on `:root` outside the theme blocks would be
+  // shadowed here by the light block and would win nothing, but it would still
+  // be a second place the ring is written down.
+  assert.equal((css.match(/--focus-ring:/g) ?? []).length, 3, 'one ring declaration per theme, no more');
 });
 
 test('the generic font keywords are not quoted into family names', () => {

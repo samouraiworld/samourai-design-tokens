@@ -197,7 +197,8 @@ export default {
         "c-page-gradient": "var(--c-page-grad)",
       },
       ringColor: {
-        DEFAULT: "#2B4BDB",
+        DEFAULT: "var(--focus-ring-color)",
+        "on-inverse": "var(--focus-ring-on-inverse-color)",
       },
       ringWidth: {
         DEFAULT: "2px",
