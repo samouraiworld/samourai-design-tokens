@@ -22,7 +22,18 @@ permissions:
 
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  # Cancel superseded pull-request runs, never runs on `main`. Cancelling on
+  # `main` means a rapid second push can leave the branch with no completed run
+  # at all, and therefore no record that the gates ever passed on it.
+  #
+  # Unconditional until this change, and harmless while every gate read the
+  # TREE: a superseding run re-reads the same tree, so cancellation lost nothing
+  # durable. The commit-message gate below is the first surface that is
+  # per-commit and not cumulative — on a push it reads HEAD's message and only
+  # that — so a cancelled run means that commit's message is read by nobody,
+  # ever. This line is what keeps the hole recorded two comments down loud
+  # rather than silent.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   # First, and with no setup-node above it: the cheapest gate here, and the one
@@ -220,7 +231,7 @@ jobs:
           tar -xzf /tmp/actionlint.tar.gz -C /tmp actionlint
           /tmp/actionlint -color
 
-  # The single check branch protection points at. Requiring the four jobs above
+  # The single check branch protection points at. Requiring the jobs above
   # by name instead would put the gate list in repository settings, where it
   # rots out of sync with this file: renaming a job leaves the old context
   # required forever — blocking every PR on a check nothing will ever report —
@@ -319,6 +330,15 @@ jobs:
       # changelog it did not write. The title, commits and diff are still scanned
       # for a bot. Nothing gates this condition, so this comment is the record
       # that the exemption is deliberate.
+      #
+      # B4's premise is that a pull-request body never enters git history. On this
+      # repository it does: `squash_merge_commit_message` is `PR_BODY`, so an
+      # exempt bot body becomes the squash commit's message, and the push-to-`main`
+      # run scans it as a commit message. Here that lands on a PUBLIC `main`.
+      # Closing it properly means setting that option away from `PR_BODY` or
+      # overturning B4; both are the owner's call, so neither is taken here.
+      # A related one: GitHub lets whoever merges rewrite the squash subject in
+      # the merge dialog, so that text is read by no pull-request-time gate.
       - name: The pull request body carries no attribution
         if: >-
           github.event_name == 'pull_request' &&
@@ -342,8 +362,12 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       # Every gate here refuses something PRESENT. None of them had an opinion
       # about a rule going ABSENT, which is how a merge taking `main..branch` as a
-      # stale branch's residue reverted the attribution policy and the Dependabot
-      # cap on another repository on 2026-09-12, with CI green throughout.
+      # stale branch's residue reverted the attribution policy, the Dependabot cap
+      # and `CODEOWNERS` on another repository on 2026-09-12, with CI green
+      # throughout. Two of those three are pinned in the manifest. `CODEOWNERS` is
+      # not, and at `approvals=0` with no code-owner review required it enforces
+      # nothing here — so it is named rather than pinned, which is the honest
+      # shape: it is unguarded, and that is a choice.
       - name: Prove the clause check can fail
         run: .github/scripts/check-required-clauses.selftest.sh
       - name: Every clause this repository must carry is still there
