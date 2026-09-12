@@ -1,0 +1,31 @@
+# Clauses this repository must keep carrying. One per line:
+#
+#     path/to/file :: text that must appear somewhere in it
+#
+# `#` starts a comment only at the beginning of a line, because a clause is a
+# fragment of prose and markdown headings begin with one. Whitespace is
+# collapsed on both sides before matching, so a rewrap is not a policy change.
+#
+# Pin the shortest fragment that cannot survive the deletion you are guarding
+# against. Retiring a clause is a deliberate act: do it in its own commit, so
+# the decision is visible in the history rather than in a merge nobody read.
+#
+# Not a workflow's behaviour. Pinning a step by its text is a category error:
+# deleting the step and leaving a comment that quotes it satisfies the clause.
+# `check-aggregate-covers-jobs`-style coverage is what guards a deleted job; a
+# deleted step is guarded by nothing here, and that is stated rather than
+# papered over. See kodera-internal for the measurement.
+
+# ── the attribution rule ────────────────────────────────────────────────────
+# Deleted for real on another repository on 2026-09-12, by a merge taking
+# `main..branch` as a stale branch's residue. Every check stayed green: the
+# attribution gate scans tracked files for the vendor name and had no opinion
+# about the policy mandating it going away.
+AGENTS.md :: ## Assistant attribution — hard rule
+AGENTS.md :: Never name an AI assistant, its vendor, or a model
+
+# ── the supply-chain cap ────────────────────────────────────────────────────
+# Reverted by the same merge on that repository. Without it `patterns: ['*']`
+# collects majors into the weekly bundle. Note the single quotes: this clause
+# pins YAML syntax, so a reformatting of that file needs it re-pinned.
+.github/dependabot.yml :: update-types: ['minor', 'patch']
