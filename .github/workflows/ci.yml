@@ -6,7 +6,15 @@ on:
   # runs of the same commit.
   push:
     branches: [main]
+    # Tag pushes, because a tag NAME and its annotation are surfaces the
+    # attribution rule names and no other event carries them.
+    tags: ["**"]
+  # `edited` is not in the default set (`opened, synchronize, reopened`), and
+  # without it the title and body gates below are advisory: both stay editable
+  # after the checks pass, so a clean run could be banked and the text made
+  # dirty afterwards with nothing re-reading it.
   pull_request:
+    types: [opened, synchronize, reopened, edited]
   workflow_dispatch:
 
 permissions:
@@ -243,11 +251,109 @@ jobs:
       - name: No tracked file carries assistant attribution
         run: python3 .github/scripts/check-vendor-attribution.py .
 
+  metadata-attribution:
+    name: Vendor attribution (the surfaces that are not files)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        # Every step here pipes a producer into the checker, and the default
+        # shell is `bash -e` WITHOUT pipefail: a `git` that failed would send an
+        # empty stream on and the surface would read as absent. Naming bash
+        # explicitly gets `-eo pipefail`, so "could not look" stays a failure.
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # The branch's own commits have to be reachable, and the base sha the
+          # range starts from with them. No `ref:`: this action adds a
+          # `refs/pull/*` refspec only when `ref` starts with `refs/pull/`, so a
+          # bare sha from a FORK is in no fetched ref and the checkout fails.
+          # This repository is public, so fork pull requests are the normal case.
+          fetch-depth: 0
+      # The job above scans tracked files. `git ls-files` cannot see a commit
+      # message, a branch name, a pull-request title or body, or a tag — and the
+      # rule names every one of them. This repository is public, so each of those
+      # is world-readable the moment it is pushed.
+      - name: Prove these checks can fail
+        run: .github/scripts/check-vendor-attribution.selftest.sh
+      # Event data reaches the shell through `env:`, never interpolated into a
+      # `run:` body. On a public repository a pull-request title is written by
+      # whoever opened it.
+      - name: The branch name carries no attribution
+        env:
+          REF: ${{ github.event.pull_request.head.ref || github.ref_name }}
+        run: >-
+          printf '%s' "$REF" |
+          python3 .github/scripts/check-vendor-attribution.py --text "branch name"
+      - name: No commit message on this branch carries attribution
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          # On a pull request, every commit the branch adds — ending at the head
+          # sha, not at the checked-out merge commit, whose message GitHub
+          # generates and nobody authored. Otherwise the head commit alone.
+          #
+          # Two dots are right HERE and wrong for a diff. `git log A..B` is the
+          # set of commits in B and not in A, which is the branch's own commits
+          # whether or not A is an ancestor. The residue rule that says to use a
+          # merge base is about `git diff`. Do not "fix" this by analogy with it.
+          if [ -n "$BASE" ]; then range="$BASE..$HEAD_SHA"; else range="-1"; fi
+          git log --format=%B "$range" |
+            python3 .github/scripts/check-vendor-attribution.py --text "commit messages on this branch"
+      # Conditional on the event rather than tolerant of an empty surface.
+      # `--allow-empty` on the title would have absorbed a typo in the field name
+      # for good: `.titel` is empty on every event, reads as "not a pull request",
+      # and passes forever. A step-level `if:` skips the step, not the job.
+      - name: The pull request title carries no attribution
+        if: github.event_name == 'pull_request'
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+        run: >-
+          printf '%s' "$TITLE" |
+          python3 .github/scripts/check-vendor-attribution.py
+          --text "pull request title"
+      # The body keeps `--allow-empty` — GitHub requires a title and not a body —
+      # and a bot's body is exempt, which is owner decision B4 (2026-09-09) as
+      # implemented in kodera-internal's merge gate: Dependabot quotes an upstream
+      # changelog it did not write. The title, commits and diff are still scanned
+      # for a bot. Nothing gates this condition, so this comment is the record
+      # that the exemption is deliberate.
+      - name: The pull request body carries no attribution
+        if: >-
+          github.event_name == 'pull_request' &&
+          github.event.pull_request.user.type != 'Bot'
+        env:
+          BODY: ${{ github.event.pull_request.body }}
+        run: >-
+          printf '%s' "$BODY" |
+          python3 .github/scripts/check-vendor-attribution.py
+          --text "pull request body" --allow-empty
+      - name: No tag on this commit carries attribution
+        run: >-
+          git tag --points-at HEAD --format='%(refname:strip=2)%0a%(contents)' |
+          python3 .github/scripts/check-vendor-attribution.py
+          --text "tags on this commit" --allow-empty
+
+  required-clauses:
+    name: Required clauses
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # Every gate here refuses something PRESENT. None of them had an opinion
+      # about a rule going ABSENT, which is how a merge taking `main..branch` as a
+      # stale branch's residue reverted the attribution policy and the Dependabot
+      # cap on another repository on 2026-09-12, with CI green throughout.
+      - name: Prove the clause check can fail
+        run: .github/scripts/check-required-clauses.selftest.sh
+      - name: Every clause this repository must carry is still there
+        run: python3 .github/scripts/check-required-clauses.py .
+
   ci-ok:
     name: ci-ok
     runs-on: ubuntu-latest
     if: always()
-    needs: [attribution, gates, secret-scan, workflows, dot-entries]
+    needs: [attribution, metadata-attribution, required-clauses, gates, secret-scan, workflows, dot-entries]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Prove this gate can fail
